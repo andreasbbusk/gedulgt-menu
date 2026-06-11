@@ -53,7 +53,7 @@ export function Wheel({
       const rect = wheel.getBoundingClientRect();
       const diameter = Math.max(320, Math.min(rect.width, rect.height));
       const radiusX = diameter * 0.33;
-      const radiusY = diameter * 0.34;
+      const radiusY = diameter * 0.27;
       const cards = Array.from(
         wheel.querySelectorAll<HTMLButtonElement>("[data-wheel-slot]"),
       );
