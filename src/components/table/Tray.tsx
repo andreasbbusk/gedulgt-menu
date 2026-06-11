@@ -53,6 +53,10 @@ export function Tray({
       const pulse = tray.querySelector(".tray__feedback-pulse");
 
       if (feedback.type === "full") {
+        if (!core) {
+          return;
+        }
+
         gsap.fromTo(
           core,
           { scale: 1, rotation: 0 },
@@ -69,29 +73,34 @@ export function Tray({
         return;
       }
 
-      gsap.fromTo(
-        pulse,
-        { autoAlpha: 0.8, scale: 0.34 },
-        {
-          autoAlpha: 0,
-          scale: reduceMotion ? 1 : 1.8,
-          duration: reduceMotion ? 0 : 0.76,
-          ease: "expo.out",
-          overwrite: "auto",
-        },
-      );
-      gsap.fromTo(
-        tokens,
-        { scale: 0.72, autoAlpha: 0 },
-        {
-          scale: 1,
-          autoAlpha: 1,
-          stagger: { amount: 0.18, from: "center" },
-          duration: reduceMotion ? 0 : 0.54,
-          ease: "back.out(1.8)",
-          overwrite: "auto",
-        },
-      );
+      if (pulse) {
+        gsap.fromTo(
+          pulse,
+          { autoAlpha: 0.8, scale: 0.34 },
+          {
+            autoAlpha: 0,
+            scale: reduceMotion ? 1 : 1.8,
+            duration: reduceMotion ? 0 : 0.76,
+            ease: "expo.out",
+            overwrite: "auto",
+          },
+        );
+      }
+
+      if (tokens.length > 0) {
+        gsap.fromTo(
+          tokens,
+          { scale: 0.72, autoAlpha: 0 },
+          {
+            scale: 1,
+            autoAlpha: 1,
+            stagger: { amount: 0.18, from: "center" },
+            duration: reduceMotion ? 0 : 0.54,
+            ease: "back.out(1.8)",
+            overwrite: "auto",
+          },
+        );
+      }
     },
     { dependencies: [feedback, totalCount], scope: trayRef },
   );

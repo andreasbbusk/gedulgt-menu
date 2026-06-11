@@ -103,7 +103,8 @@ export function Wheel({
 
       const focusedConstellations = cards
         .filter((card) => card.dataset.focusOffset === "0")
-        .map((card) => card.querySelector(".table-drink-card__constellation"));
+        .map((card) => card.querySelector(".table-drink-card__constellation"))
+        .filter((node): node is Element => node instanceof Element);
 
       if (focusedConstellations.length > 0 && !reduceMotion) {
         tl.fromTo(
