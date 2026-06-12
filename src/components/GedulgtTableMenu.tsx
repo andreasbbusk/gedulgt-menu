@@ -48,6 +48,7 @@ export function GedulgtTableMenu({
 }: GedulgtTableMenuProps) {
   const tableRef = useRef<HTMLElement | null>(null);
   const phase = useGedulgtTableStore((state) => state.phase);
+  const activeSide = useGedulgtTableStore((state) => state.activeSide);
   const focusedDrinkId = useGedulgtTableStore((state) => state.focusedDrinkId);
   const wheelPosition = useGedulgtTableStore((state) => state.wheelPosition);
   const cardFace = useGedulgtTableStore((state) => state.cardFace);
@@ -107,11 +108,11 @@ export function GedulgtTableMenu({
     enabled: gesturesEnabled,
     tableRef,
     trackingRef,
+    activeSide,
     phase,
     focusedDrinkId,
     activate,
     addFocusedToTray,
-    focusDrink,
     rotateWheel,
     toggleCardFace,
   });

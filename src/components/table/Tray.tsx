@@ -21,22 +21,22 @@ function getTrayTokenPosition(index: number, count: number) {
     window.matchMedia("(max-width: 760px)").matches;
 
   if (count <= 1) {
-    const radius = compact ? 62 : 76;
+    const radius = compact ? 74 : 94;
 
     return { badgeX: 0, badgeY: -28, x: 0, y: -radius };
   }
 
   const radius = compact
     ? count <= 2
-      ? 72
+      ? 84
       : count <= 4
-        ? 82
-        : 92
+        ? 94
+        : 104
     : count <= 2
-      ? 88
+      ? 108
       : count <= 4
-        ? 98
-        : 108;
+        ? 120
+        : 132;
   const startAngle = count <= 2 ? 218 : count <= 4 ? 202 : 190;
   const endAngle = count <= 2 ? 322 : count <= 4 ? 338 : 350;
   const angle = startAngle + ((endAngle - startAngle) / (count - 1)) * index;
@@ -128,10 +128,7 @@ export function Tray({
       aria-label="Tray"
     >
       <span className="tray__feedback-pulse" aria-hidden="true" />
-      <div className="tray__core">
-        <span className="tray__title">Tray</span>
-        <span className="tray__count">{totalCount}</span>
-      </div>
+      <div className="tray__core" aria-hidden="true" />
 
       <div className="tray__tokens" aria-label="Selected drinks">
         {items.map((item, index) => {

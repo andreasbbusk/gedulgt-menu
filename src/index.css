@@ -76,7 +76,7 @@ p {
 
 .projection-table {
   position: relative;
-  width: min(calc(100vw - 28px), calc(100svh - 28px), 980px);
+  width: min(calc(100vw - 28px), calc(100svh - 96px), 980px);
   aspect-ratio: 1;
   overflow: visible;
   border: 1px solid transparent;
@@ -494,8 +494,8 @@ p {
   left: 50%;
   top: 50%;
   z-index: 20;
-  width: clamp(176px, 27vmin, 260px);
-  height: clamp(176px, 27vmin, 260px);
+  width: clamp(226px, 34vmin, 330px);
+  height: clamp(226px, 34vmin, 330px);
   display: grid;
   place-items: center;
   pointer-events: none;
@@ -513,12 +513,8 @@ p {
 .tray__core {
   position: relative;
   z-index: 2;
-  width: clamp(94px, 13.4vmin, 136px);
+  width: clamp(128px, 18vmin, 184px);
   aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 2px;
   border: 1px solid rgba(244, 238, 226, 0.17);
   border-radius: 50%;
   background:
@@ -527,23 +523,6 @@ p {
   box-shadow:
     inset 0 0 24px rgba(244, 238, 226, 0.05),
     0 0 40px rgba(199, 155, 91, 0.14);
-}
-
-.tray__title,
-.tray__count {
-  color: var(--projected-soft);
-  font-size: clamp(0.62rem, 1.15vmin, 0.82rem);
-  font-weight: 750;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-.tray__count {
-  color: var(--projected);
-  font-family: Didot, "Bodoni 72", Georgia, serif;
-  font-size: clamp(1.16rem, 2.35vmin, 1.72rem);
-  font-weight: 400;
-  text-transform: none;
 }
 
 .tray__tokens {
@@ -1111,8 +1090,8 @@ p {
   }
 
   .tray {
-    width: 164px;
-    height: 164px;
+    width: 204px;
+    height: 204px;
   }
 
   .tray-token {

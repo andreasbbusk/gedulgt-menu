@@ -10,19 +10,25 @@ import type {
   ScreenPoint,
 } from "../../hooks/useHandTracking";
 import {
-  POINTER_HORIZONTAL_SWIPE,
   getInwardSign,
   getRotation,
   getSide,
 } from "./utils";
 
 const GESTURE_ACTION_COOLDOWN_MS = 620;
-const GESTURE_FIST_MIN_MS = 160;
-const GESTURE_FIST_MAX_MS = 1900;
-const GESTURE_FIST_MOVE_TOLERANCE = 148;
+const GESTURE_ADD_COOLDOWN_MS = 1000;
+const GESTURE_FLIP_PINCH_MAX_DISTANCE = 0.032;
 const GESTURE_MOTION_MAX_MS = 1250;
-const GESTURE_INWARD_SWIPE = 74;
-const GESTURE_INWARD_AXIS_DOMINANCE = 0.62;
+const GESTURE_AXIS_LOCK_DISTANCE = 40;
+const GESTURE_HORIZONTAL_LOCK_DOMINANCE = 0.9;
+const GESTURE_INWARD_LOCK_DOMINANCE = 1.2;
+const GESTURE_HORIZONTAL_SWIPE = 96;
+const GESTURE_HORIZONTAL_AXIS_DOMINANCE = 1.35;
+const GESTURE_INWARD_SWIPE = 100;
+const GESTURE_INWARD_AXIS_DOMINANCE = 1.7;
+const GESTURE_INWARD_HORIZONTAL_CAP = 80;
+
+type MotionAxis = "horizontal" | "inward" | "undecided";
 
 type GestureTarget =
   | {
@@ -40,23 +46,18 @@ type MotionStart = {
   target: GestureTarget;
   focusedAnchorPoint: ScreenPoint | null;
   focusedTarget: GestureTarget;
-};
-
-type FistPress = {
-  point: ScreenPoint;
-  side: TableSide;
-  startedAt: number;
-  target: GestureTarget;
-  lastTarget: GestureTarget;
+  lockedAxis: MotionAxis;
+  maxAbsoluteX: number;
 };
 
 type GestureInputState = {
   activatedForCurrentHand: boolean;
   cooldownUntil: number;
-  fistPress: FistPress | null;
   motionStart: MotionStart | null;
+  pinchReachedFlipDepth: boolean;
+  pinchTarget: GestureTarget;
   previousPose: HandPose;
-  wasPressing: boolean;
+  wasPinching: boolean;
 };
 
 type UseGestureInputOptions = {
@@ -65,11 +66,11 @@ type UseGestureInputOptions = {
   trackingRef: {
     current: HandTrackingSnapshot;
   };
+  activeSide: TableSide;
   phase: GedulgtTableStore["phase"];
   focusedDrinkId: string;
   activate: GedulgtTableStore["activate"];
   addFocusedToTray: GedulgtTableStore["addFocusedToTray"];
-  focusDrink: GedulgtTableStore["focusDrink"];
   rotateWheel: GedulgtTableStore["rotateWheel"];
   toggleCardFace: GedulgtTableStore["toggleCardFace"];
 };
@@ -78,10 +79,11 @@ function createGestureInputState(): GestureInputState {
   return {
     activatedForCurrentHand: false,
     cooldownUntil: 0,
-    fistPress: null,
     motionStart: null,
+    pinchReachedFlipDepth: false,
+    pinchTarget: null,
     previousPose: "unknown",
-    wasPressing: false,
+    wasPinching: false,
   };
 }
 
@@ -218,37 +220,30 @@ function getGestureTarget(
   return directTarget ?? getNearestGestureTarget(point, focusedDrinkId);
 }
 
-function getDistance(first: ScreenPoint, second: ScreenPoint) {
-  return Math.hypot(first.x - second.x, first.y - second.y);
+function getFocusedGestureTarget(
+  focusedDrinkId: string,
+  side: TableSide,
+): GestureTarget {
+  if (!focusedDrinkId) {
+    return null;
+  }
+
+  return {
+    type: "drink",
+    drinkId: focusedDrinkId,
+    focused: true,
+    side,
+  };
 }
 
 function isMotionPose(pose: HandPose) {
   return pose === "open" || pose === "unknown";
 }
 
-function isPressPose(snapshot: HandTrackingSnapshot) {
-  return snapshot.handPose === "fist" || snapshot.isPinching;
-}
-
-function isFocusedGestureTarget(
-  target: GestureTarget,
-  focusedDrinkId: string,
-): target is NonNullable<GestureTarget> {
+function isDeepFlipPinch(snapshot: HandTrackingSnapshot) {
   return (
-    target?.type === "drink" &&
-    (target.focused || target.drinkId === focusedDrinkId)
-  );
-}
-
-function isSameGestureTarget(
-  first: GestureTarget,
-  second: GestureTarget,
-) {
-  return (
-    first?.type === "drink" &&
-    second?.type === "drink" &&
-    first.drinkId === second.drinkId &&
-    first.side === second.side
+    snapshot.normalizedPinchDistance !== null &&
+    snapshot.normalizedPinchDistance <= GESTURE_FLIP_PINCH_MAX_DISTANCE
   );
 }
 
@@ -258,10 +253,10 @@ function createMotionStart(
   startedAt: number,
   target: GestureTarget,
   focusedDrinkId: string,
+  activeSide: TableSide,
+  lockedAxis: MotionAxis = "undecided",
 ): MotionStart {
-  const focusedTarget = isFocusedGestureTarget(target, focusedDrinkId)
-    ? target
-    : null;
+  const focusedTarget = getFocusedGestureTarget(focusedDrinkId, activeSide);
 
   return {
     point,
@@ -270,39 +265,34 @@ function createMotionStart(
     target,
     focusedAnchorPoint: focusedTarget ? point : null,
     focusedTarget,
+    lockedAxis,
+    maxAbsoluteX: 0,
   };
 }
 
 function updateMotionTarget(
   motion: MotionStart,
-  point: ScreenPoint,
   target: GestureTarget,
-  focusedDrinkId: string,
 ) {
   motion.target = target;
-
-  if (!motion.focusedTarget && isFocusedGestureTarget(target, focusedDrinkId)) {
-    motion.focusedAnchorPoint = point;
-    motion.focusedTarget = target;
-    motion.side = target.side;
-  }
 }
 
 function resetInteraction(state: GestureInputState) {
-  state.fistPress = null;
   state.motionStart = null;
-  state.wasPressing = false;
+  state.pinchReachedFlipDepth = false;
+  state.pinchTarget = null;
+  state.wasPinching = false;
 }
 
 export function useGestureInput({
   enabled,
   tableRef,
   trackingRef,
+  activeSide,
   phase,
   focusedDrinkId,
   activate,
   addFocusedToTray,
-  focusDrink,
   rotateWheel,
   toggleCardFace,
 }: UseGestureInputOptions) {
@@ -369,91 +359,37 @@ export function useGestureInput({
         return;
       }
 
-      const releasedFist =
-        inputState.wasPressing && !isPressPose(snapshot);
+      if (snapshot.isPinching && !inputState.wasPinching) {
+        inputState.pinchTarget = getFocusedGestureTarget(
+          focusedDrinkId,
+          activeSide,
+        );
+        inputState.pinchReachedFlipDepth = isDeepFlipPinch(snapshot);
+      } else if (snapshot.isPinching && isDeepFlipPinch(snapshot)) {
+        inputState.pinchReachedFlipDepth = true;
+      }
 
-      if (releasedFist && inputState.fistPress) {
-        const press = inputState.fistPress;
-        const target =
-          press.lastTarget ??
-          press.target ??
-          getGestureTarget(point, focusedDrinkId);
-        const pressDuration = now - press.startedAt;
+      const releasedPinch = !snapshot.isPinching && inputState.wasPinching;
 
-        if (
-          target?.type === "drink" &&
-          pressDuration >= GESTURE_FIST_MIN_MS &&
-          pressDuration <= GESTURE_FIST_MAX_MS
-        ) {
-          if (target.drinkId !== focusedDrinkId) {
-            focusDrink(target.drinkId, target.side, "gesture");
-          }
+      if (releasedPinch) {
+        const target = inputState.pinchTarget;
 
+        if (target?.type === "drink" && inputState.pinchReachedFlipDepth) {
           toggleCardFace(target.side, "gesture");
           inputState.cooldownUntil = now + GESTURE_ACTION_COOLDOWN_MS;
-        }
-      }
-
-      if (isPressPose(snapshot)) {
-        const target = getGestureTarget(point, focusedDrinkId);
-
-        if (!inputState.fistPress) {
-          inputState.fistPress = {
-            point,
-            side: target?.side ?? side,
-            startedAt: now,
-            target,
-            lastTarget: target,
-          };
-        } else if (target) {
-          const activeTarget =
-            inputState.fistPress.lastTarget ?? inputState.fistPress.target;
-
-          inputState.fistPress.lastTarget = target;
-
-          if (!inputState.fistPress.target) {
-            inputState.fistPress.target = target;
-          }
-
-          if (
-            activeTarget &&
-            !isSameGestureTarget(target, activeTarget) &&
-            getDistance(inputState.fistPress.point, point) >
-              GESTURE_FIST_MOVE_TOLERANCE
-          ) {
-            inputState.fistPress = {
-              point,
-              side: target.side,
-              startedAt: now,
-              target,
-              lastTarget: target,
-            };
-          }
-        } else if (
-          !inputState.fistPress.target &&
-          getDistance(inputState.fistPress.point, point) >
-            GESTURE_FIST_MOVE_TOLERANCE
-        ) {
-          inputState.fistPress = {
-            point,
-            side,
-            startedAt: now,
-            target,
-            lastTarget: target,
-          };
+          inputState.previousPose = snapshot.handPose;
+          inputState.wasPinching = snapshot.isPinching;
+          inputState.pinchReachedFlipDepth = false;
+          inputState.pinchTarget = null;
+          animationFrameId = requestAnimationFrame(runGestureFrame);
+          return;
         }
 
-        inputState.motionStart = null;
-        inputState.previousPose = snapshot.handPose;
-        inputState.wasPressing = true;
-        animationFrameId = requestAnimationFrame(runGestureFrame);
-        return;
+        inputState.pinchReachedFlipDepth = false;
+        inputState.pinchTarget = null;
       }
 
-      inputState.fistPress = null;
-      inputState.wasPressing = false;
-
-      if (isMotionPose(snapshot.handPose)) {
+      if (!snapshot.isPinching && isMotionPose(snapshot.handPose)) {
         const target = getGestureTarget(point, focusedDrinkId);
 
         if (!inputState.motionStart) {
@@ -463,15 +399,29 @@ export function useGestureInput({
             now,
             target,
             focusedDrinkId,
+            activeSide,
           );
         } else {
           const motion = inputState.motionStart;
-          updateMotionTarget(motion, point, target, focusedDrinkId);
+          updateMotionTarget(motion, target);
 
           const deltaX = point.x - motion.point.x;
           const deltaY = point.y - motion.point.y;
           const absoluteX = Math.abs(deltaX);
           const absoluteY = Math.abs(deltaY);
+          motion.maxAbsoluteX = Math.max(motion.maxAbsoluteX, absoluteX);
+
+          if (
+            motion.lockedAxis === "undecided" &&
+            Math.max(absoluteX, absoluteY) > GESTURE_AXIS_LOCK_DISTANCE
+          ) {
+            if (absoluteX >= absoluteY * GESTURE_HORIZONTAL_LOCK_DOMINANCE) {
+              motion.lockedAxis = "horizontal";
+            } else if (absoluteY > absoluteX * GESTURE_INWARD_LOCK_DOMINANCE) {
+              motion.lockedAxis = "inward";
+            }
+          }
+
           const addDeltaX = motion.focusedAnchorPoint
             ? point.x - motion.focusedAnchorPoint.x
             : 0;
@@ -481,17 +431,21 @@ export function useGestureInput({
           const addAbsoluteX = Math.abs(addDeltaX);
           const addAbsoluteY = Math.abs(addDeltaY);
           const inward =
+            motion.lockedAxis === "inward" &&
             motion.focusedTarget?.type === "drink" &&
             Math.sign(addDeltaY) === getInwardSign(motion.focusedTarget.side) &&
             addAbsoluteY >= GESTURE_INWARD_SWIPE &&
-            addAbsoluteY > addAbsoluteX * GESTURE_INWARD_AXIS_DOMINANCE;
+            addAbsoluteY > addAbsoluteX * GESTURE_INWARD_AXIS_DOMINANCE &&
+            motion.maxAbsoluteX < GESTURE_INWARD_HORIZONTAL_CAP;
           const horizontal =
-            absoluteX >= POINTER_HORIZONTAL_SWIPE && absoluteX > absoluteY * 1.12;
+            motion.lockedAxis === "horizontal" &&
+            absoluteX >= GESTURE_HORIZONTAL_SWIPE &&
+            absoluteX > absoluteY * GESTURE_HORIZONTAL_AXIS_DOMINANCE;
 
           if (inward && motion.focusedTarget) {
             addFocusedToTray(motion.focusedTarget.side, "gesture");
             inputState.motionStart = null;
-            inputState.cooldownUntil = now + GESTURE_ACTION_COOLDOWN_MS;
+            inputState.cooldownUntil = now + GESTURE_ADD_COOLDOWN_MS;
           } else if (horizontal) {
             rotateWheel(getRotation(deltaX), motion.side, "gesture");
             inputState.motionStart = null;
@@ -503,13 +457,16 @@ export function useGestureInput({
               now,
               target,
               focusedDrinkId,
+              activeSide,
+              motion.lockedAxis,
             );
           }
         }
-      } else {
+      } else if (!snapshot.isPinching) {
         inputState.motionStart = null;
       }
 
+      inputState.wasPinching = snapshot.isPinching;
       inputState.previousPose = snapshot.handPose;
       animationFrameId = requestAnimationFrame(runGestureFrame);
     };
@@ -521,9 +478,9 @@ export function useGestureInput({
     };
   }, [
     activate,
+    activeSide,
     addFocusedToTray,
     enabled,
-    focusDrink,
     focusedDrinkId,
     phase,
     rotateWheel,
