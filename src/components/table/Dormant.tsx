@@ -1,19 +1,10 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import type {
-  InteractionSource,
-  TableSide,
-} from "../../store/gedulgtTableStore";
-import { getSide } from "./utils";
 
 gsap.registerPlugin(useGSAP);
 
-type DormantProps = {
-  onActivate: (side: TableSide, source: InteractionSource) => void;
-};
-
-export function Dormant({ onActivate }: DormantProps) {
+export function Dormant() {
   const rootRef = useRef<HTMLElement | null>(null);
 
   useGSAP(
@@ -33,9 +24,9 @@ export function Dormant({ onActivate }: DormantProps) {
       });
 
       tl.fromTo(
-        q(".dormant-state__mark, .dormant-state__prompt"),
+        q(".dormant-state__mark"),
         { autoAlpha: 0, y: 18, scale: 0.95 },
-        { autoAlpha: 1, y: 0, scale: 1, stagger: 0.1 },
+        { autoAlpha: 1, y: 0, scale: 1 },
       ).fromTo(
         q(".dormant-state__halo"),
         { autoAlpha: 0, scale: 0.52 },
@@ -48,18 +39,10 @@ export function Dormant({ onActivate }: DormantProps) {
 
   return (
     <section ref={rootRef} className="dormant-state" aria-label="Dormant">
-      <button
-        type="button"
-        className="dormant-state__activation"
-        data-dormant-activate
-        onClick={(event) => {
-          onActivate(getSide(event.clientY, rootRef.current), "mouse");
-        }}
-      >
+      <div className="dormant-state__visual">
         <span className="dormant-state__halo" aria-hidden="true" />
         <span className="dormant-state__mark">Gedulgt</span>
-        <span className="dormant-state__prompt">Place hand in light</span>
-      </button>
+      </div>
     </section>
   );
 }

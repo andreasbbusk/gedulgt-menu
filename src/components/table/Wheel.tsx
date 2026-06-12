@@ -10,16 +10,20 @@ import { Card } from "./Card";
 
 gsap.registerPlugin(useGSAP);
 
+const FOCUSED_NEAR_ANGLE = 90;
+const MIRRORED_COPY_ANGLE = 180;
+const ORBIT_ANGLE_STEP = 30;
+
 type WheelProps = {
   slots: WheelSlot[];
-  focusedDrinkId: string;
+  wheelPosition: number;
   cardFace: "front" | "back";
   onDrinkClick: (drinkId: string, side: TableSide) => void;
 };
 
 export function Wheel({
   slots,
-  focusedDrinkId,
+  wheelPosition,
   cardFace,
   onDrinkClick,
 }: WheelProps) {
@@ -52,8 +56,8 @@ export function Wheel({
       ).matches;
       const rect = wheel.getBoundingClientRect();
       const diameter = Math.max(320, Math.min(rect.width, rect.height));
-      const radiusX = diameter * 0.33;
-      const radiusY = diameter * 0.27;
+      const compact = rect.width < 620;
+      const orbitRadius = diameter * (compact ? 0.345 : 0.355);
       const cards = Array.from(
         wheel.querySelectorAll<HTMLButtonElement>("[data-wheel-slot]"),
       );
@@ -66,32 +70,32 @@ export function Wheel({
 
       cards.forEach((card) => {
         const side = card.dataset.tableSide as TableSide;
+        const angle = Number(card.dataset.orbitAngle ?? FOCUSED_NEAR_ANGLE);
         const offset = Number(card.dataset.focusOffset ?? 0);
-        const depth = Math.abs(offset);
-        const focused = offset === 0;
-        const baseAngle = side === "near" ? 90 : 270;
-        const radians = ((baseAngle + offset * 23) * Math.PI) / 180;
+        const depth = Math.min(3, Math.abs(offset));
+        const focused = card.dataset.focusedSlot === "true";
+        const radians = (angle * Math.PI) / 180;
         const readableRotation = side === "far" ? 180 : 0;
-        const tilt = focused ? 0 : offset * (side === "far" ? -3 : 3);
-        const scale = focused ? 1 : depth === 1 ? 0.68 : depth === 2 ? 0.46 : 0.34;
-        const alpha = focused ? 1 : depth === 1 ? 0.46 : depth === 2 ? 0.22 : 0.1;
+        const tilt = focused ? 0 : offset * (side === "far" ? -5.5 : 5.5);
+        const scale = focused ? 1 : depth === 1 ? 0.78 : depth === 2 ? 0.56 : 0.42;
+        const alpha = focused ? 1 : depth === 1 ? 0.66 : depth === 2 ? 0.4 : 0.18;
 
         tl.to(
           card,
           {
-            x: Math.cos(radians) * radiusX,
-            y: Math.sin(radians) * radiusY,
+            x: Math.cos(radians) * orbitRadius,
+            y: Math.sin(radians) * orbitRadius,
             xPercent: -50,
             yPercent: -50,
             scale,
             rotation: readableRotation + tilt,
             rotationX: focused ? 0 : side === "near" ? -11 : 11,
-            rotationY: focused ? 0 : offset * -6,
+            rotationY: focused ? 0 : offset * -7,
             autoAlpha: alpha,
             filter: focused
               ? "blur(0px) saturate(1.08)"
-              : `blur(${Math.min(7, 2 + depth * 1.5)}px) saturate(0.72)`,
-            zIndex: focused ? 12 : 8 - depth,
+              : `blur(${depth === 1 ? 1.3 : Math.min(5.4, 1.8 + depth * 1.05)}px) saturate(${depth === 1 ? 0.92 : 0.8})`,
+            zIndex: focused ? 12 : depth === 1 ? 10 : 8 - depth,
             pointerEvents: depth <= 1 ? "auto" : "none",
             transformPerspective: 1100,
             transformOrigin: "50% 50%",
@@ -100,49 +104,38 @@ export function Wheel({
           0,
         );
       });
-
-      const focusedConstellations = cards
-        .filter((card) => card.dataset.focusOffset === "0")
-        .map((card) => card.querySelector(".table-drink-card__constellation"))
-        .filter((node): node is Element => node instanceof Element);
-
-      if (focusedConstellations.length > 0 && !reduceMotion) {
-        tl.fromTo(
-          focusedConstellations,
-          { autoAlpha: 0.15, scale: 0.75, rotation: -8 },
-          {
-            autoAlpha: 0.62,
-            scale: 1.1,
-            rotation: 8,
-            duration: 0.9,
-            ease: "elastic.out(1, 0.58)",
-          },
-          0.14,
-        );
-      }
     },
-    { dependencies: [focusedDrinkId, layoutVersion], scope: wheelRef },
+    { dependencies: [wheelPosition, layoutVersion], scope: wheelRef },
   );
 
   return (
     <div ref={wheelRef} className="mirrored-wheel" aria-label="Mirrored drinks">
       {slots.map((slot) => {
         const drink = drinks[slot.canonicalIndex];
+        const orbitAngle = getOrbitAngle(
+          slot.canonicalIndex,
+          slot.side === "far" ? 1 : 0,
+          wheelPosition,
+        );
+        const visualSide = getVisualSide(orbitAngle);
+        const visualOffset = getVisualOffset(orbitAngle, visualSide);
 
         return (
           <span
             key={slot.slotId}
             className="mirrored-wheel__slot"
             data-wheel-slot
-            data-table-side={slot.side}
-            data-focus-offset={slot.offsetFromFocus}
+            data-focused-slot={slot.focused ? "true" : undefined}
+            data-table-side={visualSide}
+            data-orbit-angle={orbitAngle}
+            data-focus-offset={visualOffset}
           >
             <Card
               drink={drink}
-              side={slot.side}
+              side={visualSide}
               focused={slot.focused}
               face={cardFace}
-              offset={slot.offsetFromFocus}
+              offset={Math.round(visualOffset)}
               onClick={onDrinkClick}
             />
           </span>
@@ -150,4 +143,30 @@ export function Wheel({
       })}
     </div>
   );
+}
+
+function getOrbitAngle(
+  canonicalIndex: number,
+  copyIndex: number,
+  focusPosition: number,
+) {
+  return (
+    FOCUSED_NEAR_ANGLE +
+    (canonicalIndex - focusPosition) * ORBIT_ANGLE_STEP +
+    copyIndex * MIRRORED_COPY_ANGLE
+  );
+}
+
+function getVisualSide(angle: number): TableSide {
+  return Math.sin((angle * Math.PI) / 180) < 0 ? "far" : "near";
+}
+
+function getVisualOffset(angle: number, side: TableSide) {
+  const focusedAngle = side === "near" ? FOCUSED_NEAR_ANGLE : 270;
+
+  return getSignedAngleDelta(angle, focusedAngle) / ORBIT_ANGLE_STEP;
+}
+
+function getSignedAngleDelta(angle: number, origin: number) {
+  return ((((angle - origin) % 360) + 540) % 360) - 180;
 }

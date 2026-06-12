@@ -2,7 +2,6 @@ import { useRef, type CSSProperties } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import {
-  MAX_SELECTED_DRINKS,
   formatPrice,
   getOrderTotal,
   type TableSide,
@@ -15,6 +14,42 @@ import { cx, getSide } from "./utils";
 gsap.registerPlugin(useGSAP);
 
 type SelectedItems = ReturnType<typeof getSelectedDrinkItems>;
+
+function getTrayTokenPosition(index: number, count: number) {
+  const compact =
+    typeof window !== "undefined" &&
+    window.matchMedia("(max-width: 760px)").matches;
+
+  if (count <= 1) {
+    const radius = compact ? 62 : 76;
+
+    return { badgeX: 0, badgeY: -28, x: 0, y: -radius };
+  }
+
+  const radius = compact
+    ? count <= 2
+      ? 72
+      : count <= 4
+        ? 82
+        : 92
+    : count <= 2
+      ? 88
+      : count <= 4
+        ? 98
+        : 108;
+  const startAngle = count <= 2 ? 218 : count <= 4 ? 202 : 190;
+  const endAngle = count <= 2 ? 322 : count <= 4 ? 338 : 350;
+  const angle = startAngle + ((endAngle - startAngle) / (count - 1)) * index;
+  const radians = (angle * Math.PI) / 180;
+  const badgeDistance = compact ? 25 : 29;
+
+  return {
+    badgeX: Math.cos(radians) * badgeDistance,
+    badgeY: Math.sin(radians) * badgeDistance,
+    x: Math.cos(radians) * radius,
+    y: Math.sin(radians) * radius,
+  };
+}
 
 type TrayProps = {
   items: SelectedItems;
@@ -48,30 +83,8 @@ export function Tray({
       const reduceMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)",
       ).matches;
-      const core = tray.querySelector(".tray__core");
       const tokens = tray.querySelectorAll(".tray-token");
       const pulse = tray.querySelector(".tray__feedback-pulse");
-
-      if (feedback.type === "full") {
-        if (!core) {
-          return;
-        }
-
-        gsap.fromTo(
-          core,
-          { scale: 1, rotation: 0 },
-          {
-            scale: reduceMotion ? 1 : 1.08,
-            rotation: reduceMotion ? 0 : 5,
-            yoyo: true,
-            repeat: 3,
-            duration: reduceMotion ? 0 : 0.08,
-            ease: "power2.inOut",
-            overwrite: "auto",
-          },
-        );
-        return;
-      }
 
       if (pulse) {
         gsap.fromTo(
@@ -90,13 +103,12 @@ export function Tray({
       if (tokens.length > 0) {
         gsap.fromTo(
           tokens,
-          { scale: 0.72, autoAlpha: 0 },
+          { autoAlpha: 0 },
           {
-            scale: 1,
             autoAlpha: 1,
             stagger: { amount: 0.18, from: "center" },
             duration: reduceMotion ? 0 : 0.54,
-            ease: "back.out(1.8)",
+            ease: "power2.out",
             overwrite: "auto",
           },
         );
@@ -111,7 +123,6 @@ export function Tray({
       className={cx(
         "tray",
         hasItems && "tray--populated",
-        feedback?.type === "full" && "tray--full",
         phase === "orderConfirmation" && "tray--confirming",
       )}
       aria-label="Tray"
@@ -119,16 +130,12 @@ export function Tray({
       <span className="tray__feedback-pulse" aria-hidden="true" />
       <div className="tray__core">
         <span className="tray__title">Tray</span>
-        <span className="tray__count">
-          {totalCount}/{MAX_SELECTED_DRINKS}
-        </span>
+        <span className="tray__count">{totalCount}</span>
       </div>
 
       <div className="tray__tokens" aria-label="Selected drinks">
         {items.map((item, index) => {
-          const count = Math.max(items.length, 1);
-          const radians = ((-90 + (360 / count) * index) * Math.PI) / 180;
-          const radius = items.length <= 1 ? 66 : 82;
+          const tokenPosition = getTrayTokenPosition(index, items.length);
 
           return (
             <button
@@ -138,8 +145,10 @@ export function Tray({
               style={
                 {
                   "--drink-accent": item.drink.accent,
-                  "--token-x": `${Math.cos(radians) * radius}px`,
-                  "--token-y": `${Math.sin(radians) * radius}px`,
+                  "--badge-x": `${tokenPosition.badgeX}px`,
+                  "--badge-y": `${tokenPosition.badgeY}px`,
+                  "--token-x": `${tokenPosition.x}px`,
+                  "--token-y": `${tokenPosition.y}px`,
                 } as CSSProperties
               }
               data-tray-token

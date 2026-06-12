@@ -13,11 +13,11 @@ import {
   cx,
 } from "./table/utils";
 import { Dormant } from "./table/Dormant";
-import { EdgeWell } from "./table/EdgeWell";
 import { Guide } from "./table/Guide";
 import { Order } from "./table/Order";
 import { Tray } from "./table/Tray";
 import { Wheel } from "./table/Wheel";
+import { useGestureInput } from "./table/useGestureInput";
 import { usePointerInput } from "./table/usePointerInput";
 import {
   INACTIVITY_TIMEOUT_MS,
@@ -31,13 +31,25 @@ import {
   type GedulgtTableStore,
   type TableSide,
 } from "../store/gedulgtTableStore";
+import type { HandTrackingSnapshot } from "../hooks/useHandTracking";
 
 gsap.registerPlugin(useGSAP);
 
-export function GedulgtTableMenu() {
+type GedulgtTableMenuProps = {
+  gesturesEnabled: boolean;
+  trackingRef: {
+    current: HandTrackingSnapshot;
+  };
+};
+
+export function GedulgtTableMenu({
+  gesturesEnabled,
+  trackingRef,
+}: GedulgtTableMenuProps) {
   const tableRef = useRef<HTMLElement | null>(null);
   const phase = useGedulgtTableStore((state) => state.phase);
   const focusedDrinkId = useGedulgtTableStore((state) => state.focusedDrinkId);
+  const wheelPosition = useGedulgtTableStore((state) => state.wheelPosition);
   const cardFace = useGedulgtTableStore((state) => state.cardFace);
   const selectedItems = useGedulgtTableStore((state) => state.selectedItems);
   const onboardingStep = useGedulgtTableStore((state) => state.onboardingStep);
@@ -89,6 +101,19 @@ export function GedulgtTableMenu() {
     tableRef,
     onAdd: addFocusedToTray,
     onRotate: rotateWheel,
+  });
+
+  useGestureInput({
+    enabled: gesturesEnabled,
+    tableRef,
+    trackingRef,
+    phase,
+    focusedDrinkId,
+    activate,
+    addFocusedToTray,
+    focusDrink,
+    rotateWheel,
+    toggleCardFace,
   });
 
   useAmbientMotion(tableRef);
@@ -144,6 +169,7 @@ export function GedulgtTableMenu() {
       }
 
       focusDrink(drinkId, side, "mouse");
+      toggleCardFace(side, "mouse");
     },
     [focusDrink, focusedDrinkId, toggleCardFace],
   );
@@ -154,30 +180,18 @@ export function GedulgtTableMenu() {
       className={cx("projection-table", `projection-table--${phase}`)}
       style={{ "--drink-accent": focusedDrink.accent } as CSSProperties}
       aria-label="Gedulgt Table Menu"
+      data-gestures={gesturesEnabled ? "enabled" : "disabled"}
       {...pointer}
     >
       <Ambient />
 
-      <EdgeWell
-        side="far"
-        phase={phase}
-        onActivate={activate}
-        onDeactivate={deactivate}
-      />
-      <EdgeWell
-        side="near"
-        phase={phase}
-        onActivate={activate}
-        onDeactivate={deactivate}
-      />
-
       {phase === "dormant" ? (
-        <Dormant onActivate={activate} />
+        <Dormant />
       ) : (
         <>
           <Wheel
             slots={wheelSlots}
-            focusedDrinkId={focusedDrinkId}
+            wheelPosition={wheelPosition}
             cardFace={cardFace}
             onDrinkClick={handleDrinkClick}
           />

@@ -27,7 +27,6 @@ export type InputLockout = {
 export type TrayFeedback =
   | { type: "added"; drinkId: string }
   | { type: "incremented"; drinkId: string }
-  | { type: "full" }
   | null;
 
 export type WheelSlot = {
@@ -45,6 +44,7 @@ export type RotateDirection = "previous" | "next";
 export type GedulgtTableState = {
   phase: ExperiencePhase;
   focusedDrinkId: string;
+  wheelPosition: number;
   cardFace: CardFace;
   selectedItems: SelectedDrinkItem[];
   onboardingCompleted: boolean;
@@ -107,9 +107,7 @@ type GedulgtTableActions = {
 
 export type GedulgtTableStore = GedulgtTableState & GedulgtTableActions;
 
-export const MAX_SELECTED_DRINKS = 6;
 export const INACTIVITY_TIMEOUT_MS = 60_000;
-export const EDGE_HOLD_MS = 1_200;
 export const SIDE_INPUT_LOCKOUT_MS = 700;
 export const ONBOARDING_STORAGE_KEY = "gedulgt:onboarding-completed";
 
@@ -120,6 +118,7 @@ function getLiveState(time: number): Omit<GedulgtTableState, "onboardingComplete
   return {
     phase: "dormant",
     focusedDrinkId: FIRST_DRINK_ID,
+    wheelPosition: getCanonicalIndex(FIRST_DRINK_ID),
     cardFace: "front",
     selectedItems: [],
     onboardingStep: "browse",
@@ -266,6 +265,7 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
 
           return {
             focusedDrinkId: CANONICAL_DRINKS[nextIndex].id,
+            wheelPosition: state.wheelPosition + offset,
             cardFace: "front",
             onboardingStep:
               state.phase === "onboarding" && state.onboardingStep === "browse"
@@ -290,6 +290,13 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
 
           return {
             focusedDrinkId: drinkId,
+            wheelPosition:
+              state.wheelPosition +
+              getCircularOffset(
+                getCanonicalIndex(drinkId),
+                getCanonicalIndex(state.focusedDrinkId),
+                CANONICAL_DRINKS.length,
+              ),
             cardFace: "front",
             trayFeedback: null,
             phase: state.phase === "trayFeedback" ? "browseWheel" : state.phase,
@@ -331,14 +338,6 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
               selectedItems: [],
               trayFeedback: { type: "added", drinkId: state.focusedDrinkId },
               cardFace: "front",
-              ...withInteraction(side, source, time),
-            };
-          }
-
-          if (getTotalFromItems(state.selectedItems) >= MAX_SELECTED_DRINKS) {
-            return {
-              phase: "trayFeedback",
-              trayFeedback: { type: "full" },
               ...withInteraction(side, source, time),
             };
           }

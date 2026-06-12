@@ -36,7 +36,7 @@ export function isIgnoredTarget(target: EventTarget | null) {
 
   return Boolean(
     target.closest(
-      "[data-edge-well], [data-tray-token], [data-tray-confirm], [data-reset-order], [data-dormant-activate]",
+      "[data-tray-token], [data-tray-confirm], [data-reset-order]",
     ),
   );
 }
