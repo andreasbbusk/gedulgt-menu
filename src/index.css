@@ -1,16 +1,17 @@
 :root {
-  --tabletop: #080a09;
-  --surface: #111411;
-  --surface-muted: #181d18;
-  --projected: #f5efe6;
-  --projected-soft: #d4c7b8;
-  --muted: #9f9589;
-  --line: #2d332d;
+  --tabletop: #050706;
+  --table-green: #0b120e;
+  --table-deep: #10130f;
+  --projected: #f4eee2;
+  --projected-soft: #cabca8;
+  --muted: #8f887a;
+  --line: rgba(244, 238, 226, 0.16);
   --amber: #c79b5b;
-  --green: #88b89a;
+  --green: #78b99a;
   --rose: #bc7885;
-  --section-accent: var(--amber);
   --drink-accent: var(--amber);
+  --phase-glow: 0.18;
+  --phase-scale: 0.985;
 
   font-family:
     Optima, "Avenir Next", Candara, "Segoe UI", ui-sans-serif, system-ui,
@@ -35,7 +36,9 @@ body,
   height: 100%;
   min-height: 100%;
   margin: 0;
-  background: var(--tabletop);
+  background:
+    radial-gradient(circle at 50% 50%, #11140f 0%, #050706 64%),
+    var(--tabletop);
 }
 
 body {
@@ -47,6 +50,11 @@ button {
   font: inherit;
 }
 
+button:focus,
+button:focus-visible {
+  outline: 0;
+}
+
 h1,
 h2,
 p {
@@ -55,59 +63,787 @@ p {
 
 .tabletop-menu {
   position: relative;
+  width: 100vw;
   height: 100svh;
-  min-height: 100svh;
-  isolation: isolate;
+  display: grid;
+  place-items: center;
   overflow: hidden;
-  background: var(--tabletop);
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse 72% 46% at 48% 46%, rgba(50, 66, 47, 0.22), transparent 70%),
+    linear-gradient(135deg, #030403 0%, #090d0a 46%, #020302 100%);
 }
 
-.tabletop-menu::before {
+.projection-table {
+  position: relative;
+  width: min(calc(100vw - 28px), calc(100svh - 96px), 980px);
+  aspect-ratio: 1;
+  overflow: visible;
+  border: 1px solid transparent;
+  background: transparent;
+  touch-action: none;
+  user-select: none;
+  transform: scale(var(--phase-scale));
+}
+
+.projection-table__ambient,
+.projection-table__ambient span {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.projection-table__grain {
+  opacity: 0.2;
+  mix-blend-mode: screen;
+  background-image:
+    linear-gradient(90deg, rgba(244, 238, 226, 0.045) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(244, 238, 226, 0.03) 1px, transparent 1px);
+  background-size: 22px 22px, 31px 31px;
+  mask-image: linear-gradient(90deg, transparent 4%, black 24%, black 76%, transparent 96%);
+}
+
+.projection-table__light-pool {
+  inset: -8% -18%;
+  opacity: 0.42;
+  background:
+    radial-gradient(ellipse 28% 20% at 47% 53%, rgba(244, 238, 226, 0.14), transparent 72%),
+    linear-gradient(112deg, transparent 18%, rgba(120, 185, 154, 0.08), transparent 74%);
+  filter: blur(18px);
+}
+
+.projection-table__smoke {
+  opacity: 0.34;
+  filter: blur(16px);
+  mix-blend-mode: screen;
+  background:
+    conic-gradient(
+      from 32deg,
+      transparent,
+      rgba(120, 185, 154, 0.2),
+      transparent,
+      rgba(188, 120, 133, 0.13),
+      transparent
+    );
+  mask-image: linear-gradient(90deg, transparent 3%, black 28%, black 72%, transparent 97%);
+}
+
+.projection-table__smoke--a {
+  transform: rotate(12deg) scale(1.08);
+}
+
+.projection-table__smoke--b {
+  transform: rotate(-26deg) scale(0.92);
+  opacity: 0.24;
+}
+
+.projection-table__prism {
+  display: none;
+  inset: 18%;
+  border-radius: 50%;
+  opacity: 0.18;
+  background:
+    conic-gradient(
+      from 0deg,
+      transparent 0 9%,
+      rgba(244, 238, 226, 0.22) 10% 11%,
+      transparent 12% 32%,
+      rgba(199, 155, 91, 0.22) 33% 34%,
+      transparent 35% 58%,
+      rgba(188, 120, 133, 0.18) 59% 60%,
+      transparent 61% 100%
+    );
+  mask-image: radial-gradient(circle, transparent 44%, black 58%, transparent 64%);
+}
+
+.projection-table__prism--b {
+  inset: 29%;
+  opacity: 0.12;
+  transform: rotate(34deg);
+}
+
+.projection-table__rim {
   display: none;
 }
 
-.projection-stage {
-  width: 100vw;
-  height: 100svh;
-  min-height: 0;
-  margin: 0 auto;
-  padding: 18px;
+.dormant-state {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
   display: grid;
-  grid-template-rows: minmax(0, 1fr);
+  place-items: center;
+}
+
+.dormant-state__visual {
+  position: relative;
+  width: min(54%, 420px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  color: var(--projected);
+}
+
+.dormant-state__halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(244, 238, 226, 0.26), transparent 22%),
+    radial-gradient(circle, rgba(199, 155, 91, 0.18), transparent 55%);
+  filter: blur(6px);
+}
+
+.dormant-state__mark {
+  position: relative;
+  font-family: Didot, "Bodoni 72", Georgia, serif;
+  font-size: clamp(2.7rem, 7.2vmin, 6.4rem);
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  text-shadow: 0 0 36px rgba(244, 238, 226, 0.18);
+}
+
+.mirrored-wheel {
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
+}
+
+.mirrored-wheel__slot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: clamp(124px, 20.2vmin, 210px);
+  height: clamp(174px, 30vmin, 304px);
+  pointer-events: auto;
+  will-change: transform, opacity, filter;
+}
+
+.table-drink-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  color: var(--projected);
+  background: transparent;
+  appearance: none;
+  cursor: pointer;
+  perspective: 1100px;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+.table-drink-card__inner,
+.table-drink-card__face {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+}
+
+.table-drink-card__inner {
+  display: block;
+  transform: rotateY(0deg);
+  transform-origin: 50% 50%;
+  transform-style: preserve-3d;
+  transition: transform 780ms cubic-bezier(0.68, -0.15, 0.265, 1.15);
+  will-change: transform;
+  -webkit-transform-style: preserve-3d;
+}
+
+.table-drink-card__inner--back {
+  transform: rotateY(180deg);
+}
+
+.table-drink-card__face {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: clamp(10px, 1.45vmin, 16px);
+  padding: clamp(14px, 2.15vmin, 22px);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--drink-accent) 24%, var(--line));
+  background:
+    linear-gradient(180deg, rgba(244, 238, 226, 0.065), rgba(244, 238, 226, 0.018)),
+    rgba(6, 8, 7, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 16px 44px rgba(0, 0, 0, 0.48);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.table-drink-card__face--front {
+  grid-template-rows: auto minmax(0, auto) auto;
+}
+
+.table-drink-card__face--back {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  align-content: stretch;
+  justify-items: stretch;
+  gap: clamp(10px, 1.35vmin, 15px);
+  text-align: left;
+  transform: rotateY(180deg);
+}
+
+.table-drink-card__name,
+.table-drink-card__back-name {
+  position: relative;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: var(--projected);
+  font-family: Didot, "Bodoni 72", Georgia, serif;
+  font-size: clamp(0.98rem, 1.86vmin, 1.36rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.table-drink-card__back-name {
+  font-size: clamp(1rem, 1.9vmin, 1.42rem);
+  line-height: 0.98;
+  text-align: center;
+}
+
+.table-drink-card__price {
+  position: relative;
+  color: color-mix(in srgb, var(--drink-accent) 48%, var(--projected));
+  font-size: clamp(0.72rem, 1.16vmin, 0.9rem);
+  font-weight: 760;
+  line-height: 1;
+}
+
+.table-drink-card__meta,
+.table-drink-card__ingredients,
+.table-drink-card__footer {
+  position: relative;
+  min-width: 0;
+  color: var(--projected-soft);
+  font-size: clamp(0.62rem, 1.08vmin, 0.82rem);
+  font-weight: 650;
+  line-height: 1.22;
+}
+
+.table-drink-card__meta {
+  color: color-mix(in srgb, var(--drink-accent) 38%, var(--projected));
+  font-size: clamp(0.66rem, 1.16vmin, 0.9rem);
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.table-drink-card__ingredients {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: clamp(3px, 0.52vmin, 6px) clamp(4px, 0.72vmin, 8px);
+  overflow: hidden;
+  padding: clamp(4px, 0.7vmin, 9px) 0;
+  color: color-mix(in srgb, var(--projected-soft) 88%, var(--drink-accent));
+  font-size: clamp(0.58rem, 0.98vmin, 0.76rem);
+  line-height: 1.1;
+  text-align: center;
+}
+
+.table-drink-card__ingredients--dense {
+  gap: clamp(2px, 0.38vmin, 5px) clamp(3px, 0.55vmin, 7px);
+  font-size: clamp(0.5rem, 0.82vmin, 0.66rem);
+  line-height: 1.06;
+}
+
+.table-drink-card__ingredients span {
+  display: inline;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.table-drink-card__ingredients span:not(:last-child)::after {
+  content: "/";
+  margin-left: clamp(4px, 0.72vmin, 8px);
+  color: color-mix(in srgb, var(--drink-accent) 42%, var(--projected-soft));
+}
+
+.table-drink-card__footer {
+  width: 100%;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: clamp(8px, 1vmin, 12px);
+  border-top: 1px solid rgba(244, 238, 226, 0.12);
+}
+
+.table-drink-card__footer span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--projected-soft);
+  font-size: clamp(0.52rem, 0.92vmin, 0.7rem);
+  font-weight: 700;
+  line-height: 1.08;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table-drink-card__footer strong {
+  flex: 0 0 auto;
+  color: var(--projected);
+  font-size: clamp(1rem, 1.75vmin, 1.32rem);
+  line-height: 1;
+}
+
+.table-drink-card--focused .table-drink-card__face {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 0 34px color-mix(in srgb, var(--drink-accent) 18%, transparent),
+    0 26px 64px rgba(0, 0, 0, 0.58);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .table-drink-card__inner {
+    transition-duration: 0ms;
+  }
+}
+
+.drink-glyph {
+  position: relative;
+  width: clamp(58px, 9.6vmin, 96px);
+  height: clamp(94px, 15.6vmin, 154px);
+  display: block;
+  filter: drop-shadow(0 14px 30px color-mix(in srgb, var(--drink-accent) 22%, transparent));
+}
+
+.drink-glyph--small {
+  width: 23px;
+  height: 34px;
+}
+
+.drink-glyph__stem {
+  position: absolute;
+  left: 50%;
+  bottom: 5%;
+  width: 1px;
+  height: 28%;
+  background: rgba(244, 238, 226, 0.42);
+  transform: translateX(-50%);
+}
+
+.drink-glyph__bowl {
+  position: absolute;
+  left: 50%;
+  top: 5%;
+  width: 58%;
+  height: 68%;
+  overflow: hidden;
+  border: 1px solid rgba(244, 238, 226, 0.5);
+  border-radius: 45% 45% 38% 38%;
+  background: rgba(244, 238, 226, 0.035);
+  transform: translateX(-50%) rotate(-5deg);
+}
+
+.drink-glyph__liquid {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 8%;
+  height: 46%;
+  border-radius: 40% 40% 32% 32%;
+  background: var(--drink-accent);
+  opacity: 0.82;
+}
+
+.drink-glyph__flare {
+  position: absolute;
+  width: 42%;
+  height: 1px;
+  background: rgba(244, 238, 226, 0.68);
+}
+
+.drink-glyph__flare--a {
+  left: 14%;
+  top: 21%;
+  transform: rotate(-18deg);
+}
+
+.drink-glyph__flare--b {
+  right: 12%;
+  top: 54%;
+  transform: rotate(18deg);
+}
+
+.drink-glyph__caustic {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 70%;
+  height: 13%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--drink-accent) 22%, transparent);
+  filter: blur(6px);
+  transform: translateX(-50%);
+}
+
+.tray {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 20;
+  width: clamp(226px, 34vmin, 330px);
+  height: clamp(226px, 34vmin, 330px);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.tray__feedback-pulse {
+  position: absolute;
+  inset: 16%;
+  border: 1px solid color-mix(in srgb, var(--drink-accent) 44%, transparent);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.tray__core {
+  position: relative;
+  z-index: 2;
+  width: clamp(128px, 18vmin, 184px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(244, 238, 226, 0.17);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(244, 238, 226, 0.13), transparent 56%),
+    rgba(5, 7, 6, 0.58);
+  box-shadow:
+    inset 0 0 24px rgba(244, 238, 226, 0.05),
+    0 0 40px rgba(199, 155, 91, 0.14);
+}
+
+.tray__tokens {
+  position: absolute;
+  inset: 0;
+}
+
+.tray-token {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--drink-accent) 42%, var(--line));
+  border-radius: 50%;
+  color: var(--projected);
+  background: rgba(6, 8, 7, 0.84);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--drink-accent) 18%, transparent);
+  cursor: pointer;
+  pointer-events: auto;
+  transform: translate(calc(-50% + var(--token-x)), calc(-50% + var(--token-y)));
+}
+
+.tray-token > span:last-child {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(244, 238, 226, 0.22);
+  border-radius: 50%;
+  background: #090c09;
+  font-size: 0.66rem;
+  font-weight: 800;
+  line-height: 1;
+  transform: translate(calc(-50% + var(--badge-x)), calc(-50% + var(--badge-y)));
+}
+
+.tray__confirm {
+  position: absolute;
+  left: 50%;
+  bottom: -24px;
+  z-index: 4;
+  min-width: 148px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(244, 238, 226, 0.16);
+  border-radius: 8px;
+  color: var(--projected);
+  background: rgba(8, 10, 9, 0.76);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.tray--populated .tray__confirm {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.tray__confirm:disabled {
+  cursor: default;
+}
+
+.projection-table--orderConfirmation .mirrored-wheel,
+.projection-table--orderConfirmation .tray {
+  opacity: 0.2;
+  filter: blur(5px) saturate(0.72);
+  pointer-events: none;
+}
+
+.tray__confirm span,
+.tray__confirm strong {
+  font-size: clamp(0.72rem, 1.2vmin, 0.86rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.onboarding-guide {
+  position: absolute;
+  right: 12%;
+  top: 50%;
+  z-index: 28;
+  width: clamp(142px, 21vmin, 212px);
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  color: var(--projected);
+  text-align: center;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.onboarding-guide__icon {
+  width: 100%;
+  overflow: visible;
+  fill: none;
+}
+
+.onboarding-guide__trace {
+  stroke: rgba(244, 238, 226, 0.48);
+  stroke-dasharray: 130;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+
+.onboarding-guide__hand {
+  fill: rgba(244, 238, 226, 0.12);
+  stroke: rgba(244, 238, 226, 0.7);
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.onboarding-guide span {
+  color: var(--projected-soft);
+  font-size: clamp(0.82rem, 1.55vmin, 1.08rem);
+  font-weight: 750;
+  line-height: 1.08;
+  text-transform: uppercase;
+}
+
+.order-confirmation {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 40;
+  width: min(46%, 390px);
+  max-height: 70%;
+  padding: clamp(18px, 3vmin, 30px);
+  display: grid;
+  gap: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(244, 238, 226, 0.24);
+  border-radius: 8px;
+  color: var(--projected);
+  background:
+    linear-gradient(160deg, rgba(244, 238, 226, 0.12), rgba(244, 238, 226, 0.025)),
+    rgba(5, 7, 6, 0.9);
+  box-shadow:
+    0 0 70px rgba(199, 155, 91, 0.22),
+    0 28px 90px rgba(0, 0, 0, 0.58);
+  transform: translate(-50%, -50%);
+}
+
+.order-confirmation__brand {
+  color: var(--amber);
+  font-family: Didot, "Bodoni 72", Georgia, serif;
+  font-size: clamp(1.1rem, 2.2vmin, 1.45rem);
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.order-confirmation h2 {
+  color: var(--projected);
+  font-family: Didot, "Bodoni 72", Georgia, serif;
+  font-size: clamp(2rem, 5vmin, 3.6rem);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: 0;
+}
+
+.order-confirmation__items {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.order-confirmation__item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 0;
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(244, 238, 226, 0.1);
+}
+
+.order-confirmation__item span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--projected-soft);
+  font-size: clamp(0.78rem, 1.35vmin, 0.98rem);
+  font-weight: 650;
+  line-height: 1.18;
+}
+
+.order-confirmation__item strong {
+  flex: 0 0 auto;
+  color: var(--projected);
+  font-size: clamp(0.8rem, 1.4vmin, 1rem);
+}
+
+.order-confirmation__total {
+  color: var(--projected);
+  font-size: clamp(1rem, 2vmin, 1.35rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.order-confirmation__reset {
+  justify-self: start;
+  min-height: 36px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(244, 238, 226, 0.2);
+  border-radius: 8px;
+  color: var(--projected);
+  background: rgba(244, 238, 226, 0.06);
+  cursor: pointer;
+}
+
+.order-confirmation__reset span {
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-transform: uppercase;
 }
 
 .tracking-preview {
   position: fixed;
   right: 18px;
   bottom: 18px;
+  z-index: 90;
   width: 1px;
   height: 1px;
+  display: grid;
+  grid-template-columns: minmax(260px, 1.12fr) minmax(236px, 0.88fr);
   overflow: hidden;
+  border: 1px solid rgba(244, 238, 226, 0.18);
+  border-radius: 8px;
+  color: var(--projected);
+  background:
+    linear-gradient(135deg, rgba(244, 238, 226, 0.08), transparent 42%),
+    rgba(5, 7, 6, 0.94);
+  box-shadow:
+    0 18px 70px rgba(0, 0, 0, 0.52),
+    0 0 42px rgba(120, 185, 154, 0.1);
   opacity: 0;
   pointer-events: none;
-  z-index: 90;
-  background: #050706;
-  border: 1px solid rgba(244, 234, 220, 0.18);
-  border-radius: 0;
+  transform: translateY(8px) scale(0.98);
   transition:
     width 180ms ease,
     height 180ms ease,
-    opacity 180ms ease;
+    opacity 180ms ease,
+    transform 180ms ease;
 }
 
 .tracking-preview--open {
-  width: min(420px, calc(100vw - 36px));
-  height: auto;
-  aspect-ratio: 16 / 9;
+  width: min(760px, calc(100vw - 36px));
+  height: min(420px, calc(100svh - 36px));
   opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.tracking-preview__stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(120, 185, 154, 0.16), transparent 54%),
+    #030403;
+}
+
+.tracking-preview__stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(244, 238, 226, 0.035) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(244, 238, 226, 0.025) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(90deg, transparent, black 18%, black 82%, transparent);
+  opacity: 0.7;
 }
 
 .tracking-preview__video {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
+  opacity: 0.72;
   transform: scaleX(-1);
+}
+
+.tracking-preview__projection-frame {
+  position: absolute;
+  left: 10%;
+  top: 10%;
+  width: 80%;
+  height: 80%;
+  border: 1px dashed rgba(244, 238, 226, 0.32);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 1px rgba(120, 185, 154, 0.08),
+    0 0 38px rgba(120, 185, 154, 0.1);
+}
+
+.tracking-preview__projection-frame span {
+  position: absolute;
+  left: 10px;
+  top: 8px;
+  color: rgba(244, 238, 226, 0.68);
+  font-size: 0.58rem;
+  font-weight: 780;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .tracking-preview__svg {
@@ -120,9 +856,14 @@ p {
 
 .tracking-preview__line {
   opacity: 0;
-  stroke: var(--rose);
+  stroke: rgba(188, 120, 133, 0.8);
   stroke-linecap: round;
   stroke-width: 2.5;
+}
+
+.tracking-preview__line--palmCenter-projectedCursor {
+  stroke: rgba(199, 155, 91, 0.7);
+  stroke-dasharray: 4 7;
 }
 
 .tracking-preview__marker {
@@ -133,8 +874,23 @@ p {
   border-radius: 999px;
   background: var(--green);
   opacity: 0;
-  transform: translate(-50%, -50%);
   pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.tracking-preview__marker--projectedCursor {
+  width: 24px;
+  height: 24px;
+  border-color: rgba(244, 238, 226, 0.76);
+  background: var(--amber);
+  box-shadow: 0 0 0 9px rgba(199, 155, 91, 0.16);
+}
+
+.tracking-preview__marker--palmCenter {
+  width: 18px;
+  height: 18px;
+  background: var(--green);
+  box-shadow: 0 0 0 7px rgba(120, 185, 154, 0.12);
 }
 
 .tracking-preview__marker--thumbTip {
@@ -146,419 +902,229 @@ p {
   height: 20px;
 }
 
-.menu-view {
-  min-width: 0;
-  min-height: 0;
-  display: grid;
-}
-
-.catalog-stage {
-  position: relative;
-  min-width: 0;
-  min-height: 0;
-  display: block;
-  overflow: hidden;
-  cursor: grab;
-  touch-action: pan-y;
-  user-select: none;
-}
-
-.catalog-stage--dragging,
-.catalog-stage--dragging .drink-card {
-  cursor: grabbing;
-}
-
-.catalog-slider {
+.tracking-preview__legend {
   position: absolute;
-  inset: 0;
-  z-index: 1;
-  overflow: hidden;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
 }
 
-.drink-card {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: min(26vw, 480px);
-  height: min(68vh, 690px);
-  min-height: 0;
-  padding: 0;
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  gap: clamp(8px, 1vh, 14px);
-  overflow: visible;
-  border: 0;
-  border-radius: 0;
-  color: var(--projected);
-  background: transparent;
-  text-align: center;
-  cursor: pointer;
-  appearance: none;
-  box-shadow: none;
-  will-change: transform, opacity, filter;
-}
-
-.drink-card::before {
-  display: none;
-}
-
-.drink-card__visual {
-  position: relative;
-  min-height: 0;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  border: 1px solid rgba(245, 239, 230, 0.18);
-  border-radius: clamp(26px, 3vw, 52px);
-  background: #0b0d0c;
-  box-shadow:
-    0 28px 80px rgba(0, 0, 0, 0.42),
-    0 0 0 1px rgba(255, 255, 255, 0.035);
-}
-
-.drink-card__glass,
-.drink-detail__glass {
-  position: relative;
-  display: block;
-  width: clamp(74px, 8vw, 112px);
-  height: clamp(150px, 25vh, 224px);
-  border: 1px solid rgba(245, 239, 230, 0.36);
-  border-radius: 46px 46px 19px 19px;
-  background: rgba(255, 255, 255, 0.035);
-  box-shadow:
-    inset 12px 0 18px rgba(255, 255, 255, 0.07),
-    0 22px 50px color-mix(in srgb, var(--drink-accent) 20%, transparent);
-  transform: rotate(-5deg);
-}
-
-.drink-card__glass::before,
-.drink-detail__glass::before {
-  position: absolute;
-  left: 50%;
-  top: -48px;
-  width: 23px;
-  height: 54px;
-  border: 1px solid rgba(245, 239, 230, 0.28);
-  border-bottom: 0;
-  border-radius: 16px 16px 4px 4px;
-  content: "";
-  transform: translateX(-50%);
-}
-
-.drink-card__liquid,
-.drink-detail__liquid {
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 10px;
-  height: 44%;
-  border-radius: 32px 32px 13px 13px;
-  background: var(--drink-accent);
-  opacity: 0.82;
-}
-
-.drink-card__shadow {
-  display: none;
-}
-
-.drink-card__copy {
-  display: grid;
-  justify-items: center;
-  min-width: 0;
-}
-
-.drink-card__name {
-  display: block;
-  max-width: min(100%, 14ch);
-  overflow-wrap: normal;
-  text-wrap: balance;
-  word-break: normal;
-  color: var(--projected);
-  font-family:
-    Didot,
-    "Bodoni 72",
-    "Bodoni 72 Smallcaps",
-    "Iowan Old Style",
-    Georgia,
-    serif;
-  font-size: clamp(1.75rem, 2.55vw, 3.35rem);
-  font-weight: 400;
-  line-height: 1.05;
-  letter-spacing: 0;
-  text-shadow: 0 10px 34px rgba(0, 0, 0, 0.36);
+.tracking-preview__legend span {
+  min-height: 22px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid rgba(244, 238, 226, 0.13);
+  border-radius: 999px;
+  color: rgba(244, 238, 226, 0.78);
+  background: rgba(5, 7, 6, 0.72);
+  font-size: 0.58rem;
+  font-weight: 780;
+  line-height: 1;
   text-transform: uppercase;
 }
 
-.drink-card--active {
-  box-shadow: none;
+.tracking-preview__swatch {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--projected);
 }
 
-.drink-card--active .drink-card__visual {
-  border-color: rgba(245, 239, 230, 0.28);
-  box-shadow:
-    0 34px 100px rgba(0, 0, 0, 0.5),
-    0 0 0 1px color-mix(in srgb, var(--drink-accent) 24%, transparent),
-    0 0 54px color-mix(in srgb, var(--drink-accent) 18%, transparent);
+.tracking-preview__swatch--cursor {
+  background: var(--amber);
 }
 
-.drink-card:hover,
-.drink-card--hovered {
-  color: var(--projected);
+.tracking-preview__swatch--palm {
+  background: var(--green);
 }
 
-.drink-card--pressed {
-  box-shadow: 0 0 0 7px color-mix(in srgb, var(--drink-accent) 14%, transparent);
+.tracking-preview__swatch--pinch {
+  background: var(--rose);
 }
 
-.detail-close:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--section-accent) 44%, transparent);
-  outline-offset: 4px;
-}
-
-.drink-card:focus,
-.drink-card:focus-visible {
-  outline: 0;
-}
-
-.detail-stage {
-  min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: stretch;
-  overflow: hidden;
-}
-
-.drink-detail {
+.tracking-preview__panel {
   min-width: 0;
   min-height: 0;
-  padding: clamp(26px, 4vw, 64px);
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
-  gap: clamp(14px, 2vw, 22px);
-  overflow: hidden;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  align-content: start;
+  gap: 10px;
+  padding: 14px;
+  border-left: 1px solid rgba(244, 238, 226, 0.12);
+  background:
+    radial-gradient(circle at 8% 0%, rgba(199, 155, 91, 0.12), transparent 44%),
+    rgba(5, 7, 6, 0.68);
 }
 
-.drink-detail__header,
-.drink-detail__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-}
-
-.drink-detail__header > span {
-  color: var(--muted);
-  font-size: 0.86rem;
-  font-weight: 700;
-  letter-spacing: 0;
-}
-
-.detail-close {
-  width: 60px;
-  height: 60px;
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  color: var(--projected);
-  background: rgba(17, 20, 17, 0.72);
-  cursor: pointer;
-  transition:
-    background-color 180ms ease,
-    border-color 180ms ease,
-    transform 180ms ease;
-}
-
-.detail-close:hover,
-.detail-close--hovered {
-  border-color: color-mix(in srgb, var(--drink-accent) 48%, var(--line));
-  background: var(--surface-muted);
-}
-
-.detail-close--pressed {
-  transform: scale(0.93);
-}
-
-.drink-detail__content {
-  min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1fr);
-  gap: clamp(28px, 6vw, 96px);
-  align-items: center;
-}
-
-.drink-detail__visual {
+.tracking-preview__header {
   position: relative;
-  min-width: 0;
-  min-height: min(44vh, 430px);
   display: grid;
+  gap: 7px;
+  padding-right: 60px;
+}
+
+.tracking-preview__eyebrow {
+  color: color-mix(in srgb, var(--green) 72%, var(--projected));
+  font-size: 0.62rem;
+  font-weight: 860;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.tracking-preview__header strong {
+  min-height: 36px;
+  color: var(--projected);
+  font-size: clamp(0.9rem, 1.34vw, 1.04rem);
+  font-weight: 760;
+  line-height: 1.16;
+}
+
+.tracking-preview__shortcut {
+  position: absolute;
+  right: 0;
+  top: 0;
+  min-width: 48px;
+  min-height: 24px;
+  display: inline-grid;
   place-items: center;
-  overflow: hidden;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-}
-
-.drink-detail__halo {
-  display: none;
-}
-
-.drink-detail__body {
-  min-width: 0;
-  display: grid;
-  align-content: center;
-  gap: 13px;
-}
-
-.drink-detail h2 {
-  max-width: 14ch;
-  overflow-wrap: anywhere;
-  color: var(--projected);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2.6rem, 5vw, 5.6rem);
-  font-weight: 400;
-  line-height: 0.95;
-  letter-spacing: 0;
-}
-
-.drink-detail p {
+  border: 1px solid rgba(244, 238, 226, 0.18);
+  border-radius: 6px;
   color: var(--projected-soft);
-  font-size: clamp(1rem, 1.5vw, 1.3rem);
-  font-weight: 650;
-  line-height: 1.35;
-  letter-spacing: 0;
-}
-
-.drink-detail__flavors,
-.drink-detail__ingredients {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 9px;
-}
-
-.drink-detail__flavors span {
-  min-height: 32px;
-  padding: 6px 10px;
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid color-mix(in srgb, var(--drink-accent) 34%, var(--line));
-  border-radius: 8px;
-  color: var(--projected);
-  background: rgba(17, 20, 17, 0.42);
-  font-size: 0.86rem;
-  font-weight: 700;
+  background: rgba(244, 238, 226, 0.055);
+  font-size: 0.62rem;
+  font-weight: 820;
   line-height: 1;
 }
 
-.drink-detail__ingredients span {
-  min-height: 26px;
-  padding: 4px 7px;
-  display: inline-flex;
+.tracking-preview__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.tracking-preview__stat {
+  min-width: 0;
+  min-height: 43px;
+  padding: 7px 9px;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  border: 1px solid rgba(244, 238, 226, 0.12);
+  border-radius: 7px;
+  background: rgba(244, 238, 226, 0.045);
+}
+
+.tracking-preview__stat span,
+.tracking-preview__stat strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.66rem;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tracking-preview__stat span {
+  color: var(--projected-soft);
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.tracking-preview__stat strong {
+  color: var(--projected);
+  font-weight: 800;
+}
+
+.tracking-preview__hints {
+  display: grid;
+  gap: 6px;
+}
+
+.tracking-preview__hints span {
+  min-height: 25px;
+  padding: 6px 9px 6px 11px;
+  display: flex;
   align-items: center;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  color: var(--muted);
-  background: transparent;
-  font-size: 0.72rem;
-  font-weight: 600;
+  border-left: 2px solid rgba(120, 185, 154, 0.54);
+  border-radius: 0 7px 7px 0;
+  color: var(--projected-soft);
+  background: rgba(244, 238, 226, 0.045);
+  font-size: 0.68rem;
+  font-weight: 760;
   line-height: 1.12;
 }
 
-.drink-detail__footer {
-  padding-top: 8px;
-  border-top: 1px solid rgba(245, 239, 230, 0.12);
+.tracking-preview[data-tracking-tone="ready"] {
+  border-color: rgba(120, 185, 154, 0.46);
+  box-shadow:
+    0 18px 70px rgba(0, 0, 0, 0.52),
+    0 0 46px rgba(120, 185, 154, 0.2);
 }
 
-.drink-detail__footer span {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 650;
-  line-height: 1.2;
+.tracking-preview[data-tracking-tone="limited"] {
+  border-color: rgba(199, 155, 91, 0.52);
 }
 
-.drink-detail__footer strong {
-  flex: 0 0 auto;
-  color: var(--projected);
-  font-size: 1.45rem;
-  line-height: 1;
+.tracking-preview[data-tracking-tone="error"] {
+  border-color: rgba(188, 120, 133, 0.62);
 }
 
-.virtual-cursor {
-  position: fixed;
-  z-index: 20;
-  width: 28px;
-  height: 28px;
-  border: 2px solid var(--projected);
-  border-radius: 999px;
-  background: rgba(244, 234, 220, 0.84);
-  pointer-events: none;
-  will-change: transform, opacity;
-}
-
-.virtual-cursor__ring {
-  position: absolute;
-  inset: -16px;
-  border: 2px solid rgba(244, 234, 220, 0.22);
-  border-radius: inherit;
-  transform-origin: 50% 50%;
-}
-
-@media (max-width: 1180px) {
-  body {
-    overflow: hidden;
-  }
-
-  .projection-stage {
-    width: 100vw;
-    height: 100svh;
-  }
-
-  .drink-card {
-    width: min(36vw, 370px);
-    height: min(62vh, 520px);
-  }
-
-  .drink-detail__content {
-    grid-template-columns: minmax(240px, 0.78fr) minmax(0, 1fr);
-  }
+.tracking-preview[data-tracking-tone="error"] .tracking-preview__eyebrow,
+.tracking-preview[data-tracking-tone="limited"] .tracking-preview__eyebrow {
+  color: var(--amber);
 }
 
 @media (max-width: 760px) {
-  .projection-stage {
-    width: 100vw;
-    padding: 14px;
+  .projection-table {
+    width: min(calc(100vw - 14px), calc(100svh - 14px));
   }
 
-  .drink-card {
-    width: min(66vw, 300px);
-    height: min(60vh, 460px);
+  .mirrored-wheel__slot {
+    width: clamp(94px, 21vmin, 144px);
+    height: clamp(132px, 30vmin, 202px);
   }
 
-  .drink-card__name {
-    font-size: clamp(1.9rem, 9vw, 2.7rem);
+  .tray {
+    width: 204px;
+    height: 204px;
   }
 
-  .drink-detail {
-    padding-inline: 20px;
+  .tray-token {
+    width: 42px;
+    height: 42px;
   }
 
-  .drink-detail__content {
+  .onboarding-guide {
+    right: 6%;
+    width: 128px;
+  }
+
+  .order-confirmation {
+    width: min(72%, 340px);
+  }
+
+  .tracking-preview {
+    right: 9px;
+    bottom: 9px;
     grid-template-columns: 1fr;
   }
 
-  .drink-detail__visual {
-    min-height: 220px;
+  .tracking-preview--open {
+    width: calc(100vw - 18px);
+    height: min(560px, calc(100svh - 18px));
   }
 
-  .drink-detail h2 {
-    max-width: 100%;
-    font-size: clamp(2.3rem, 12vw, 3.5rem);
+  .tracking-preview__stage {
+    min-height: 210px;
+  }
+
+  .tracking-preview__panel {
+    border-left: 0;
+    border-top: 1px solid rgba(244, 238, 226, 0.12);
   }
 }

@@ -261,7 +261,7 @@ function getCameraErrorMessage(error: unknown): string {
   return "Hand tracking could not be started.";
 }
 
-export function useHandTracking() {
+export function useHandTracking({ enabled = true }: { enabled?: boolean } = {}) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const trackingRef = useRef<HandTrackingSnapshot>({
     ...EMPTY_TRACKING_SNAPSHOT,
@@ -276,10 +276,20 @@ export function useHandTracking() {
   const [isFistClosed, setIsFistClosed] = useState(false);
   const [handPose, setHandPose] = useState<HandPose>("unknown");
   const [hasHand, setHasHand] = useState(false);
-  const [status, setStatus] = useReducer(statusReducer, undefined);
+  const [status, setStatus] = useReducer(statusReducer, "idle");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!enabled) {
+      trackingRef.current = { ...EMPTY_TRACKING_SNAPSHOT };
+      pinchStateRef.current = false;
+      fistStateRef.current = false;
+      handPoseRef.current = "unknown";
+      handStateRef.current = false;
+      activeHandLockedRef.current = false;
+      return;
+    }
+
     let animationFrameId = 0;
     let disposed = false;
     let handLandmarker: HandLandmarker | null = null;
@@ -545,7 +555,7 @@ export function useHandTracking() {
       handLandmarker?.close();
       stopWebcam();
     };
-  }, []);
+  }, [enabled]);
 
   return {
     videoRef,
