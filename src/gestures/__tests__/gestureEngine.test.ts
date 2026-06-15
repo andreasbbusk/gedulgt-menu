@@ -15,6 +15,9 @@ const config: EngineConfig = {
   swipeUpMinPx: 90,
   swipeUpMaxOffAxisPx: 20,
   swipeUpMinVelocityPxMs: 0.25,
+  swipeDownMinPx: 90,
+  swipeDownMaxOffAxisPx: 20,
+  swipeDownMinVelocityPxMs: 0.6,
   fistTapMaxMs: 300,
   cooldownMs: 600,
   returnGuardMs: 1200,
@@ -86,6 +89,9 @@ describe("defaultConfig", () => {
       swipeUpMinPx: 112.00000000000001,
       swipeUpMaxOffAxisPx: 90,
       swipeUpMinVelocityPxMs: 0.25,
+      swipeDownMinPx: 112.00000000000001,
+      swipeDownMaxOffAxisPx: 90,
+      swipeDownMinVelocityPxMs: 0.6,
       fistTapMaxMs: 300,
       cooldownMs: 600,
       returnGuardMs: 1200,
@@ -316,6 +322,48 @@ describe("updateEngine - SWIPE_UP", () => {
     );
 
     expect(result.event).toEqual({ type: "SWIPE_UP" });
+  });
+});
+
+describe("updateEngine - SWIPE_DOWN", () => {
+  it("fires SWIPE_DOWN when dy exceeds swipeDownMinPx with sufficient velocity", () => {
+    let result = step(createEngineState(), frame("open", { x: 100, y: 200 }, 100));
+    result = step(result.state, frame("open", { x: 112, y: 330 }, 300));
+
+    expect(result.event).toEqual({ type: "SWIPE_DOWN" });
+  });
+
+  it("does not fire when dx exceeds swipeDownMaxOffAxisPx", () => {
+    let result = step(createEngineState(), frame("open", { x: 100, y: 200 }, 100));
+    result = step(result.state, frame("open", { x: 121, y: 330 }, 300));
+
+    expect(result.event).toBeNull();
+  });
+
+  it("does not fire when velocity is below swipeDownMinVelocityPxMs", () => {
+    let result = step(createEngineState(), frame("open", { x: 100, y: 200 }, 0));
+    result = step(result.state, frame("open", { x: 100, y: 330 }, 1_000));
+
+    expect(result.event).toBeNull();
+  });
+
+  it("checks SWIPE_DOWN before horizontal swipe", () => {
+    const diagonalConfig = {
+      ...config,
+      swipeDownMaxOffAxisPx: 140,
+    };
+    let result = updateEngine(
+      createEngineState(),
+      frame("open", { x: 100, y: 200 }, 100),
+      diagonalConfig,
+    );
+    result = updateEngine(
+      result.state,
+      frame("open", { x: 230, y: 330 }, 300),
+      diagonalConfig,
+    );
+
+    expect(result.event).toEqual({ type: "SWIPE_DOWN" });
   });
 });
 

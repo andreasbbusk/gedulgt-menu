@@ -17,6 +17,8 @@ export function useGestureEngine({
   const rotateWheel    = useGedulgtTableStore((s) => s.rotateWheel);
   const toggleCardFace = useGedulgtTableStore((s) => s.toggleCardFace);
   const addFocusedToTray = useGedulgtTableStore((s) => s.addFocusedToTray);
+  const decrementTrayItem = useGedulgtTableStore((s) => s.decrementTrayItem);
+  const focusedDrinkId = useGedulgtTableStore((s) => s.focusedDrinkId);
   const phase          = useGedulgtTableStore((s) => s.phase);
   const activate       = useGedulgtTableStore((s) => s.activate);
   const deactivate     = useGedulgtTableStore((s) => s.deactivate);
@@ -60,6 +62,10 @@ export function useGestureEngine({
         return;
       }
 
+      if (event.type === "SWIPE_DOWN") {
+        decrementTrayItem(focusedDrinkId, "near", "gesture", now);
+      }
+
       dispatchGestureEvent(
         event,
         { rotateWheel, toggleCardFace, addFocusedToTray },
@@ -70,6 +76,8 @@ export function useGestureEngine({
       rotateWheel,
       toggleCardFace,
       addFocusedToTray,
+      decrementTrayItem,
+      focusedDrinkId,
       phase,
       activate,
       deactivate,

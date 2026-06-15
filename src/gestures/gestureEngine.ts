@@ -2,6 +2,7 @@ export type GestureEvent =
   | { type: "SWIPE"; direction: "left" | "right" }
   | { type: "FIST_TAP" }
   | { type: "SWIPE_UP" }
+  | { type: "SWIPE_DOWN" }
   | { type: "DOUBLE_OPEN" };
 
 export type GesturePhase = "idle" | "tracking" | "cooldown";
@@ -24,6 +25,9 @@ export type EngineConfig = {
   swipeUpMinPx: number;
   swipeUpMaxOffAxisPx: number;
   swipeUpMinVelocityPxMs: number;
+  swipeDownMinPx: number;
+  swipeDownMaxOffAxisPx: number;
+  swipeDownMinVelocityPxMs: number;
   fistTapMaxMs: number; // fist must close and be detected within this window
   cooldownMs: number;
   returnGuardMs: number;
@@ -45,12 +49,15 @@ export type EngineState = {
 
 export function defaultConfig(screenW: number, screenH: number): EngineConfig {
   return {
-    swipeMinPx: screenW * 0.12,
+    swipeMinPx: screenW * 0.13,
     swipeMaxOffAxisPx: screenH * 0.18,
     swipeMinVelocityPxMs: 0.25,
     swipeUpMinPx: screenH * 0.14,
     swipeUpMaxOffAxisPx: screenW * 0.09,
     swipeUpMinVelocityPxMs: 0.25,
+    swipeDownMinPx:           screenH * 0.14,
+    swipeDownMaxOffAxisPx:    screenW * 0.09,
+    swipeDownMinVelocityPxMs: 0.6,
     fistTapMaxMs: 300,
     cooldownMs: 600,
     returnGuardMs: 1200,
@@ -207,15 +214,24 @@ export function updateEngine(
     const dy = input.point.y - origin.y; // negative = upward in screen coords
     const elapsed = Math.max(poseAge, 1);
     const velocityPxMs = Math.abs(dx) / elapsed;
-    const verticalVelocityPxMs = Math.abs(dy) / elapsed;
+    const velocityYPxMs = Math.abs(dy) / elapsed;
 
     // Swipe up — checked first, stricter axis gate
     if (
       -dy >= config.swipeUpMinPx &&
       Math.abs(dx) <= config.swipeUpMaxOffAxisPx &&
-      verticalVelocityPxMs >= config.swipeUpMinVelocityPxMs
+      velocityYPxMs >= config.swipeUpMinVelocityPxMs
     ) {
       return fire({ type: "SWIPE_UP" });
+    }
+
+    // Swipe down — mirrors swipe up, checks +dy
+    if (
+      dy >= config.swipeDownMinPx &&
+      Math.abs(dx) <= config.swipeDownMaxOffAxisPx &&
+      velocityYPxMs >= config.swipeDownMinVelocityPxMs
+    ) {
+      return fire({ type: "SWIPE_DOWN" });
     }
 
     // Horizontal swipe
