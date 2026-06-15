@@ -14,8 +14,7 @@ const config: EngineConfig = {
   swipeMinVelocityPxMs: 0.25,
   swipeUpMinPx: 90,
   swipeUpMaxOffAxisPx: 20,
-  fistHoldMs: 500,
-  fistMoveTolerance: 30,
+  fistTapMaxMs: 300,
   cooldownMs: 600,
   returnGuardMs: 1200,
 };
@@ -56,8 +55,7 @@ describe("gestureEngine", () => {
       swipeMinVelocityPxMs: 0.25,
       swipeUpMinPx: 112.00000000000001,
       swipeUpMaxOffAxisPx: 90,
-      fistHoldMs: 500,
-      fistMoveTolerance: 60,
+      fistTapMaxMs: 300,
       cooldownMs: 600,
       returnGuardMs: 1200,
     });
@@ -133,21 +131,27 @@ describe("gestureEngine", () => {
     expect(result).toEqual({ state: createEngineState(), event: null });
   });
 
-  it("fires a fist hold only after the configured hold duration", () => {
-    let result = step(createEngineState(), frame("fist", { x: 100, y: 100 }, 1_000));
-    expect(result.event).toBeNull();
+  it("fires a fist tap immediately when a fist is first detected", () => {
+    const result = step(
+      createEngineState(),
+      frame("fist", { x: 100, y: 100 }, 1_000),
+    );
 
-    result = step(result.state, frame("fist", { x: 108, y: 105 }, 1_499));
-    expect(result.event).toBeNull();
-
-    result = step(result.state, frame("fist", { x: 110, y: 105 }, 1_500));
-    expect(result.event).toEqual({ type: "FIST_HOLD" });
-    expect(result.state.cooldownUntil).toBe(2_100);
+    expect(result.event).toEqual({ type: "FIST_TAP" });
+    expect(result.state.cooldownUntil).toBe(1_600);
   });
 
-  it("does not fire a fist hold when the fist drifts past tolerance", () => {
-    let result = step(createEngineState(), frame("fist", { x: 100, y: 100 }, 1_000));
-    result = step(result.state, frame("fist", { x: 150, y: 100 }, 1_600));
+  it("does not fire a fist tap on subsequent fist frames", () => {
+    const result = step(
+      {
+        ...createEngineState(),
+        phase: "tracking",
+        pose: "fist",
+        poseStart: 1_000,
+        swipeOrigin: { x: 100, y: 100 },
+      },
+      frame("fist", { x: 150, y: 100 }, 1_400),
+    );
 
     expect(result.event).toBeNull();
     expect(result.state.swipeOrigin).toBeNull();

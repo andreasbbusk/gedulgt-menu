@@ -46,10 +46,10 @@ describe("dispatchGestureEvent", () => {
     );
   });
 
-  it("maps fist hold to card face toggle on the near side from gesture input", () => {
+  it("maps fist tap to card face toggle on the near side from gesture input", () => {
     const actions = createActions();
 
-    dispatchGestureEvent({ type: "FIST_HOLD" }, actions, 12_347);
+    dispatchGestureEvent({ type: "FIST_TAP" }, actions, 12_347);
 
     expect(actions.toggleCardFace).toHaveBeenCalledWith(
       "near",

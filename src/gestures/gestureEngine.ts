@@ -1,6 +1,6 @@
 export type GestureEvent =
   | { type: "SWIPE"; direction: "left" | "right" }
-  | { type: "FIST_HOLD" }
+  | { type: "FIST_TAP" }
   | { type: "SWIPE_UP" };
 
 export type GesturePhase = "idle" | "tracking" | "cooldown";
@@ -20,8 +20,7 @@ export type EngineConfig = {
   swipeMinVelocityPxMs: number;
   swipeUpMinPx: number;
   swipeUpMaxOffAxisPx: number;
-  fistHoldMs: number;
-  fistMoveTolerance: number;
+  fistTapMaxMs: number; // fist must close and be detected within this window
   cooldownMs: number;
   returnGuardMs: number;
 };
@@ -43,8 +42,7 @@ export function defaultConfig(screenW: number, screenH: number): EngineConfig {
     swipeMinVelocityPxMs: 0.25,
     swipeUpMinPx: screenH * 0.14,
     swipeUpMaxOffAxisPx: screenW * 0.09,
-    fistHoldMs: 500,
-    fistMoveTolerance: screenW * 0.06,
+    fistTapMaxMs: 300,
     cooldownMs: 600,
     returnGuardMs: 1200,
   };
@@ -103,23 +101,12 @@ export function updateEngine(
   };
 
   if (input.pose === "fist") {
-    const origin = poseChanged
-      ? input.point
-      : (state.swipeOrigin ?? input.point);
-    const drift = Math.hypot(
-      input.point.x - origin.x,
-      input.point.y - origin.y,
-    );
-
-    if (drift > config.fistMoveTolerance) {
-      return { state: { ...next, swipeOrigin: null }, event: null };
+    // Fire immediately on first frame the fist is detected, within the tap window
+    if (poseChanged && poseAge <= config.fistTapMaxMs) {
+      return fire({ type: "FIST_TAP" });
     }
 
-    if (poseAge >= config.fistHoldMs) {
-      return fire({ type: "FIST_HOLD" });
-    }
-
-    return { state: { ...next, swipeOrigin: origin }, event: null };
+    return { state: { ...next, swipeOrigin: null }, event: null };
   }
 
   if (input.pose === "open") {

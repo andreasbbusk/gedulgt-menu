@@ -20,7 +20,7 @@ export function dispatchGestureEvent(
     );
   }
 
-  if (event.type === "FIST_HOLD") {
+  if (event.type === "FIST_TAP") {
     actions.toggleCardFace("near", "gesture", time);
   }
 
