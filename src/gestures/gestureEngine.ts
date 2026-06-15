@@ -54,7 +54,7 @@ export function defaultConfig(screenW: number, screenH: number): EngineConfig {
     swipeMinVelocityPxMs: 0.25,
     swipeUpMinPx: screenH * 0.14,
     swipeUpMaxOffAxisPx: screenW * 0.09,
-    swipeUpMinVelocityPxMs: 0.25,
+    swipeUpMinVelocityPxMs: 0.05,
     swipeDownMinPx:           screenH * 0.14,
     swipeDownMaxOffAxisPx:    screenW * 0.09,
     swipeDownMinVelocityPxMs: 0.6,
