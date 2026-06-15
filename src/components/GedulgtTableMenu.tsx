@@ -7,6 +7,7 @@ import {
   type RefObject,
 } from "react";
 import { useGSAP } from "@gsap/react";
+import { useHotkeys } from "@tanstack/react-hotkeys";
 import gsap from "gsap";
 import { FEEDBACK_SETTLE_MS, cx } from "./table/utils";
 import { Dormant } from "./table/Dormant";
@@ -360,76 +361,51 @@ function useKeyboardInput({
   addFocusedToTray,
   resetExperience,
 }: KeyboardInput) {
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) {
-        return;
-      }
+  const activateOr = (callback: () => void) => {
+    if (phase === "dormant") {
+      activate("near");
+      return;
+    }
 
-      if (event.key === "Escape") {
-        event.preventDefault();
-        if (phase === "orderConfirmation") {
-          resetExperience();
-        } else if (phase !== "dormant") {
-          deactivate("near");
-        }
-        return;
-      }
+    callback();
+  };
 
-      if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        if (phase === "dormant") {
-          activate("near");
-        } else {
-          rotateWheel("previous", "near");
-        }
-        return;
-      }
-
-      if (event.key === "ArrowRight") {
-        event.preventDefault();
-        if (phase === "dormant") {
-          activate("near");
-        } else {
-          rotateWheel("next", "near");
-        }
-        return;
-      }
-
-      if (event.key === "Enter") {
-        event.preventDefault();
-        if (phase === "dormant") {
-          activate("near");
-        } else if (phase === "orderConfirmation") {
-          resetExperience();
-        } else {
-          toggleCardFace("near");
-        }
-        return;
-      }
-
-      if (event.key === " ") {
-        event.preventDefault();
-        if (phase === "dormant") {
-          activate("near");
-        } else {
-          addFocusedToTray("near");
-        }
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [
-    activate,
-    addFocusedToTray,
-    deactivate,
-    phase,
-    resetExperience,
-    rotateWheel,
-    toggleCardFace,
-  ]);
+  useHotkeys(
+    [
+      {
+        hotkey: "Escape",
+        callback: () => {
+          if (phase === "orderConfirmation") {
+            resetExperience();
+          } else if (phase !== "dormant") {
+            deactivate("near");
+          }
+        },
+      },
+      {
+        hotkey: "ArrowLeft",
+        callback: () => activateOr(() => rotateWheel("previous", "near")),
+      },
+      {
+        hotkey: "ArrowRight",
+        callback: () => activateOr(() => rotateWheel("next", "near")),
+      },
+      {
+        hotkey: "Enter",
+        callback: () =>
+          activateOr(() => {
+            if (phase === "orderConfirmation") {
+              resetExperience();
+            } else {
+              toggleCardFace("near");
+            }
+          }),
+      },
+      {
+        hotkey: "Space",
+        callback: () => activateOr(() => addFocusedToTray("near")),
+      },
+    ],
+    { preventDefault: true, stopPropagation: false },
+  );
 }
