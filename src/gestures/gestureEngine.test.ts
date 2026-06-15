@@ -17,6 +17,7 @@ const config: EngineConfig = {
   fistHoldMs: 500,
   fistMoveTolerance: 30,
   cooldownMs: 600,
+  returnGuardMs: 1200,
 };
 
 function frame(
@@ -43,6 +44,8 @@ describe("gestureEngine", () => {
       poseStart: 0,
       swipeOrigin: null,
       cooldownUntil: 0,
+      lastSwipeDirection: null,
+      returnGuardUntil: 0,
     });
   });
 
@@ -56,6 +59,7 @@ describe("gestureEngine", () => {
       fistHoldMs: 500,
       fistMoveTolerance: 60,
       cooldownMs: 600,
+      returnGuardMs: 1200,
     });
   });
 

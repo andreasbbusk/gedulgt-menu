@@ -23,6 +23,7 @@ export type EngineConfig = {
   fistHoldMs: number;
   fistMoveTolerance: number;
   cooldownMs: number;
+  returnGuardMs: number;
 };
 
 export type EngineState = {
@@ -31,6 +32,8 @@ export type EngineState = {
   poseStart: number;
   swipeOrigin: Pt | null;
   cooldownUntil: number;
+  lastSwipeDirection: "left" | "right" | null;
+  returnGuardUntil: number;
 };
 
 export function defaultConfig(screenW: number, screenH: number): EngineConfig {
@@ -43,6 +46,7 @@ export function defaultConfig(screenW: number, screenH: number): EngineConfig {
     fistHoldMs: 500,
     fistMoveTolerance: screenW * 0.06,
     cooldownMs: 600,
+    returnGuardMs: 1200,
   };
 }
 
@@ -53,6 +57,8 @@ export function createEngineState(): EngineState {
     poseStart: 0,
     swipeOrigin: null,
     cooldownUntil: 0,
+    lastSwipeDirection: null,
+    returnGuardUntil: 0,
   };
 }
 
@@ -67,6 +73,12 @@ export function updateEngine(
       phase: "cooldown" as const,
       cooldownUntil: input.time + config.cooldownMs,
       swipeOrigin: null,
+      lastSwipeDirection:
+        event.type === "SWIPE" ? event.direction : state.lastSwipeDirection,
+      returnGuardUntil:
+        event.type === "SWIPE"
+          ? input.time + config.returnGuardMs
+          : state.returnGuardUntil,
     },
     event,
   });
@@ -130,12 +142,19 @@ export function updateEngine(
     }
 
     // Horizontal swipe
+    const direction = dx < 0 ? "left" : "right";
+    const isReturnStroke =
+      state.lastSwipeDirection !== null &&
+      direction !== state.lastSwipeDirection &&
+      input.time < state.returnGuardUntil;
+
     if (
       Math.abs(dx) >= config.swipeMinPx &&
       Math.abs(dy) <= config.swipeMaxOffAxisPx &&
-      velocityPxMs >= config.swipeMinVelocityPxMs
+      velocityPxMs >= config.swipeMinVelocityPxMs &&
+      !isReturnStroke
     ) {
-      return fire({ type: "SWIPE", direction: dx < 0 ? "left" : "right" });
+      return fire({ type: "SWIPE", direction });
     }
 
     return { state: { ...next, swipeOrigin: origin }, event: null };
