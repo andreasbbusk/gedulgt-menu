@@ -75,6 +75,7 @@ export function Tray({
 			).matches;
 			const tokens = tray.querySelectorAll('.tray-token');
 			const pulse = tray.querySelector('.tray__feedback-pulse');
+			const countChanged = previousCountRef.current !== totalCount;
 			const entersFromCenter = previousCountRef.current === 0 && totalCount > 0;
 
 			if (pulse && feedback) {
@@ -91,7 +92,7 @@ export function Tray({
 				);
 			}
 
-			if (tokens.length > 0) {
+			if (tokens.length > 0 && countChanged) {
 				if (entersFromCenter) {
 					gsap.fromTo(
 						tokens,
