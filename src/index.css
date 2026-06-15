@@ -241,7 +241,10 @@ p {
 	top: 50%;
 	width: clamp(124px, 20.2vmin, 210px);
 	height: clamp(174px, 30vmin, 304px);
+	opacity: 0;
 	pointer-events: auto;
+	transform: translate(-50%, -50%) scale(0.72);
+	visibility: hidden;
 	will-change: transform, opacity, filter;
 }
 

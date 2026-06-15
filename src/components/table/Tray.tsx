@@ -8,6 +8,7 @@ import {
 	type TrayFeedback,
 	type getSelectedDrinkItems,
 } from '../../store/gedulgtTableStore';
+import { getDrinkImageSrc } from './drinkAssets';
 import { cx, getSide } from './utils';
 
 gsap.registerPlugin(useGSAP);
@@ -131,10 +132,7 @@ export function Tray({
 			<div className='tray__tokens' aria-label='Selected drinks'>
 				{items.map((item, index) => {
 					const tokenPosition = getTrayTokenPosition(index, items.length);
-					const pngImage = new URL(
-						`../../assets/${item.drink.pngImage}`,
-						import.meta.url,
-					).href;
+					const imageSrc = getDrinkImageSrc(item.drink.imageId);
 
 					return (
 						<button
@@ -158,7 +156,7 @@ export function Tray({
 							}}
 							aria-label={`Remove one ${item.drink.name}`}>
 							<img
-								src={pngImage}
+								src={imageSrc}
 								alt={item.drink.name}
 								className='drink-card__image'
 							/>

@@ -19,8 +19,7 @@ export type GedulgtDrink = {
   ingredients: string[];
   price: string;
   creator: string;
-  glyphId: 1 | 2 | 3 | 4;
-  pngImage: string;
+  imageId: string;
 };
 
 export const GEDULGT_SECTIONS: GedulgtSection[] = [
@@ -66,8 +65,7 @@ export const GEDULGT_DRINKS: GedulgtDrink[] = [
     ],
     price: "110,-",
     creator: "Mia Hjorth",
-    glyphId: 1,
-    pngImage: "cocktail1.webp",
+    imageId: "cocktail1",
   },
   {
     id: "how-about-them-olives",
@@ -85,8 +83,7 @@ export const GEDULGT_DRINKS: GedulgtDrink[] = [
     ],
     price: "110,-",
     creator: "Mia Hjorth",
-    glyphId: 2,
-    pngImage: "cocktail2.webp",
+    imageId: "cocktail2",
   },
   {
     id: "wake-me-up-before-you-co-co",
@@ -105,8 +102,7 @@ export const GEDULGT_DRINKS: GedulgtDrink[] = [
     ],
     price: "130,-",
     creator: "Julie Kjarsgaard, Lajos Kis & Erika Karko",
-    glyphId: 3,
-    pngImage: "cocktail3.webp",
+    imageId: "cocktail3",
   },
   {
     id: "can-can",
@@ -117,8 +113,7 @@ export const GEDULGT_DRINKS: GedulgtDrink[] = [
     ingredients: ["Plymouth sloe gin", "Pimm's", "Lime", "Ginger beer"],
     price: "120,-",
     creator: "Bastian Leander",
-    glyphId: 4,
-    pngImage: "cocktail4.webp",
+    imageId: "cocktail4",
   },
   {
     id: "american-beauty",
@@ -138,8 +133,7 @@ export const GEDULGT_DRINKS: GedulgtDrink[] = [
     ],
     price: "140,-",
     creator: "Bastian Leander & Hasse Johansen",
-    glyphId: 1,
-    pngImage: "cocktail5.webp",
+    imageId: "cocktail5",
   },
   {
     id: "pop-pop-popcorn",
@@ -155,8 +149,7 @@ export const GEDULGT_DRINKS: GedulgtDrink[] = [
     ],
     price: "120,-",
     creator: "Bastian Leander",
-    glyphId: 2,
-    pngImage: "cocktail6.webp",
+    imageId: "cocktail6",
   },
   // {
   //   id: "orange-chocolate-negroni",
@@ -172,8 +165,7 @@ export const GEDULGT_DRINKS: GedulgtDrink[] = [
   //   ],
   //   price: "135,-",
   //   creator: "Mads Schack & Bastian Leander",
-  //   glyphId: 3,
-  //   pngImage: "cocktail1.webp",
+  //   imageId: "cocktail1",
   // },
   // {
   //   id: "rum-old-fashioned",
@@ -191,8 +183,7 @@ export const GEDULGT_DRINKS: GedulgtDrink[] = [
   //   ],
   //   price: "135,-",
   //   creator: "Hasse Johansen",
-  //   glyphId: 4,
-  //   pngImage: "cocktail2.webp",
+  //   imageId: "cocktail2",
   // },
   // {
   //   id: "cotton-candy-champagne-cocktail",
@@ -208,8 +199,7 @@ export const GEDULGT_DRINKS: GedulgtDrink[] = [
   //   ],
   //   price: "150,-",
   //   creator: "Bastian Leander",
-  //   glyphId: 2,
-  //   pngImage: "cocktail3.webp",
+  //   imageId: "cocktail3",
   // },
 ];
 
