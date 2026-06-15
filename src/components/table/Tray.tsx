@@ -14,39 +14,29 @@ gsap.registerPlugin(useGSAP);
 
 type SelectedItems = ReturnType<typeof getSelectedDrinkItems>;
 
-function getTrayTokenPosition(index: number, count: number) {
+// Deterministic scattered grid positions — close together, varied in x and y
+const SCATTER = [
+	{ dx: 0, dy: -8 },
+	{ dx: 55, dy: 28 },
+	{ dx: -58, dy: 34 },
+	{ dx: 12, dy: -90 },
+	{ dx: -53, dy: -64 },
+	{ dx: 68, dy: -58 },
+];
+
+function getTrayTokenPosition(index: number) {
 	const compact =
 		typeof window !== 'undefined' &&
 		window.matchMedia('(max-width: 760px)').matches;
 
-	if (count <= 1) {
-		const radius = compact ? 74 : 94;
-
-		return { badgeX: 0, badgeY: -28, x: 0, y: -radius };
-	}
-
-	const radius = compact
-		? count <= 2
-			? 84
-			: count <= 4
-				? 94
-				: 104
-		: count <= 2
-			? 108
-			: count <= 4
-				? 120
-				: 132;
-	const startAngle = count <= 2 ? 218 : count <= 4 ? 202 : 190;
-	const endAngle = count <= 2 ? 322 : count <= 4 ? 338 : 350;
-	const angle = startAngle + ((endAngle - startAngle) / (count - 1)) * index;
-	const radians = (angle * Math.PI) / 180;
-	const badgeDistance = compact ? 25 : 29;
+	const scale = compact ? 0.72 : 1;
+	const s = SCATTER[index % SCATTER.length];
 
 	return {
-		badgeX: Math.cos(radians) * badgeDistance,
-		badgeY: Math.sin(radians) * badgeDistance,
-		x: Math.cos(radians) * radius,
-		y: Math.sin(radians) * radius,
+		badgeX: 0,
+		badgeY: -24,
+		x: s.dx * scale,
+		y: s.dy * scale,
 	};
 }
 
@@ -68,6 +58,7 @@ export function Tray({
 	onConfirm,
 }: TrayProps) {
 	const trayRef = useRef<HTMLElement | null>(null);
+	const previousCountRef = useRef(totalCount);
 	const hasItems = totalCount > 0;
 	const total = getOrderTotal(items);
 
@@ -75,7 +66,7 @@ export function Tray({
 		() => {
 			const tray = trayRef.current;
 
-			if (!tray || !feedback) {
+			if (!tray) {
 				return;
 			}
 
@@ -84,8 +75,9 @@ export function Tray({
 			).matches;
 			const tokens = tray.querySelectorAll('.tray-token');
 			const pulse = tray.querySelector('.tray__feedback-pulse');
+			const entersFromCenter = previousCountRef.current === 0 && totalCount > 0;
 
-			if (pulse) {
+			if (pulse && feedback) {
 				gsap.fromTo(
 					pulse,
 					{ autoAlpha: 0.8, scale: 0.34 },
@@ -100,18 +92,38 @@ export function Tray({
 			}
 
 			if (tokens.length > 0) {
-				gsap.fromTo(
-					tokens,
-					{ autoAlpha: 0 },
-					{
-						autoAlpha: 1,
-						stagger: { amount: 0.18, from: 'center' },
-						duration: reduceMotion ? 0 : 0.54,
-						ease: 'power2.out',
-						overwrite: 'auto',
-					},
-				);
+				if (entersFromCenter) {
+					gsap.fromTo(
+						tokens,
+						{
+							autoAlpha: 0,
+							scale: 0,
+						},
+						{
+							autoAlpha: 1,
+							scale: 1,
+							stagger: { amount: 0.2, from: 'center' },
+							duration: reduceMotion ? 0 : 0.68,
+							ease: 'back.out',
+							overwrite: 'auto',
+						},
+					);
+				} else {
+					gsap.fromTo(
+						tokens,
+						{ autoAlpha: 0 },
+						{
+							autoAlpha: 1,
+							stagger: { amount: 0.18, from: 'center' },
+							duration: reduceMotion ? 0 : 0.54,
+							ease: 'power2.out',
+							overwrite: 'auto',
+						},
+					);
+				}
 			}
+
+			previousCountRef.current = totalCount;
 		},
 		{ dependencies: [feedback, totalCount], scope: trayRef },
 	);
@@ -130,7 +142,7 @@ export function Tray({
 
 			<div className='tray__tokens' aria-label='Selected drinks'>
 				{items.map((item, index) => {
-					const tokenPosition = getTrayTokenPosition(index, items.length);
+					const tokenPosition = getTrayTokenPosition(index);
 					const pngImage = new URL(
 						`../../assets/${item.drink.pngImage}`,
 						import.meta.url,
