@@ -76,7 +76,10 @@ function step(state: EngineState, input: EngineInput) {
 
 describe("gestureEngine sequences", () => {
   it("swipe right, return stroke left within guard, guard expires, swipe left fires", () => {
-    let result = step(createEngineState(), frame("open", { x: 100, y: 100 }, 100));
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 100 }, 100),
+    );
     result = step(result.state, frame("open", { x: 230, y: 100 }, 300));
     expect(result.event).toEqual({ type: "SWIPE", direction: "right" });
 
@@ -135,7 +138,10 @@ describe("gestureEngine sequences", () => {
   });
 
   it("rapid consecutive swipes in same direction all fire", () => {
-    let result = step(createEngineState(), frame("open", { x: 100, y: 100 }, 100));
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 100 }, 100),
+    );
     result = step(result.state, frame("open", { x: 230, y: 100 }, 300));
     expect(result.event).toEqual({ type: "SWIPE", direction: "right" });
 

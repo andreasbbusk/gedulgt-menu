@@ -36,26 +36,26 @@ The Gedulgt Table Menu is a projected, gesture-ready menu experience for a round
 
 ## Open Decisions
 
-| Decision | Status | Notes |
-| --- | --- | --- |
-| Typography | Pending | Keep open until brand/type direction is chosen. Current app fonts should not be treated as final. |
-| Final drink media | Pending | The first build uses abstract glass glyphs. Real drink media will later fill asset slots. |
+| Decision                      | Status  | Notes                                                                                                          |
+| ----------------------------- | ------- | -------------------------------------------------------------------------------------------------------------- |
+| Typography                    | Pending | Keep open until brand/type direction is chosen. Current app fonts should not be treated as final.              |
+| Final drink media             | Pending | The first build uses abstract glass glyphs. Real drink media will later fill asset slots.                      |
 | Smoke/ambience implementation | Pending | Baseline can use CSS/SVG. A React smoke library may be tested if it improves mood without hurting performance. |
-| Exact hand gestures | Pending | The app should first implement semantic actions. Gesture recognition and thresholds are tuned later. |
-| Final menu content | Pending | Use first six current drinks for v1; final content can replace these later. |
+| Exact hand gestures           | Pending | The app should first implement semantic actions. Gesture recognition and thresholds are tuned later.           |
+| Final menu content            | Pending | Use first six current drinks for v1; final content can replace these later.                                    |
 
 ## Core Vocabulary
 
-| Term | Meaning |
-| --- | --- |
-| Gedulgt Table Menu | The full projected table menu experience. |
-| dormant | Quiet hidden state with subtle Gedulgt mark and projector light cue. |
-| active | Any non-dormant state where the table menu is visible. |
-| focused drink | The canonical drink currently highlighted on both mirrored halves. |
-| Tray | The central radial area where selected drink tokens gather. |
-| mirrored wheel | The circular drink wheel rendered once for the near guest and once for the far guest. |
-| edge well | A subtle near/far table-edge hold zone for activating or deactivating the experience. |
-| semantic action | A product-level action such as rotate, flip, add to Tray, or deactivate, independent from the input device. |
+| Term               | Meaning                                                                                                     |
+| ------------------ | ----------------------------------------------------------------------------------------------------------- |
+| Gedulgt Table Menu | The full projected table menu experience.                                                                   |
+| dormant            | Quiet hidden state with subtle Gedulgt mark and projector light cue.                                        |
+| active             | Any non-dormant state where the table menu is visible.                                                      |
+| focused drink      | The canonical drink currently highlighted on both mirrored halves.                                          |
+| Tray               | The central radial area where selected drink tokens gather.                                                 |
+| mirrored wheel     | The circular drink wheel rendered once for the near guest and once for the far guest.                       |
+| edge well          | A subtle near/far table-edge hold zone for activating or deactivating the experience.                       |
+| semantic action    | A product-level action such as rotate, flip, add to Tray, or deactivate, independent from the input device. |
 
 ## Source Context
 

@@ -55,8 +55,8 @@ export function defaultConfig(screenW: number, screenH: number): EngineConfig {
     swipeUpMinPx: screenH * 0.14,
     swipeUpMaxOffAxisPx: screenW * 0.09,
     swipeUpMinVelocityPxMs: 0.05,
-    swipeDownMinPx:           screenH * 0.14,
-    swipeDownMaxOffAxisPx:    screenW * 0.09,
+    swipeDownMinPx: screenH * 0.14,
+    swipeDownMaxOffAxisPx: screenW * 0.09,
     swipeDownMinVelocityPxMs: 0.6,
     fistTapMaxMs: 300,
     cooldownMs: 600,
@@ -100,18 +100,20 @@ export function updateEngine(
     const anchor0 = state.doubleOpenAnchor[0] ?? input.hands[0]?.point ?? null;
     const anchor1 = state.doubleOpenAnchor[1] ?? input.hands[1]?.point ?? null;
 
-    const drift0 = anchor0 && input.hands[0]?.point
-      ? Math.hypot(
-          input.hands[0].point.x - anchor0.x,
-          input.hands[0].point.y - anchor0.y,
-        )
-      : 0;
-    const drift1 = anchor1 && input.hands[1]?.point
-      ? Math.hypot(
-          input.hands[1].point.x - anchor1.x,
-          input.hands[1].point.y - anchor1.y,
-        )
-      : 0;
+    const drift0 =
+      anchor0 && input.hands[0]?.point
+        ? Math.hypot(
+            input.hands[0].point.x - anchor0.x,
+            input.hands[0].point.y - anchor0.y,
+          )
+        : 0;
+    const drift1 =
+      anchor1 && input.hands[1]?.point
+        ? Math.hypot(
+            input.hands[1].point.x - anchor1.x,
+            input.hands[1].point.y - anchor1.y,
+          )
+        : 0;
 
     const handsMoved =
       drift0 > config.doubleOpenMoveTolerance ||
@@ -172,7 +174,9 @@ export function updateEngine(
       cooldownUntil: input.time + config.cooldownMs,
       swipeOrigin: null,
       lastSwipeDirection:
-        event.type === "SWIPE" ? event.direction : clearedState.lastSwipeDirection,
+        event.type === "SWIPE"
+          ? event.direction
+          : clearedState.lastSwipeDirection,
       returnGuardUntil:
         event.type === "SWIPE"
           ? input.time + config.returnGuardMs

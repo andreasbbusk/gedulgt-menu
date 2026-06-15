@@ -61,18 +61,10 @@ type GedulgtTableActions = {
     side: TableSide,
     time?: number,
   ) => void;
-  focusDrink: (
-    drinkId: string,
-    side: TableSide,
-    time?: number,
-  ) => void;
+  focusDrink: (drinkId: string, side: TableSide, time?: number) => void;
   toggleCardFace: (side: TableSide, time?: number) => void;
   addFocusedToTray: (side: TableSide, time?: number) => void;
-  decrementTrayItem: (
-    drinkId: string,
-    side: TableSide,
-    time?: number,
-  ) => void;
+  decrementTrayItem: (drinkId: string, side: TableSide, time?: number) => void;
   confirmOrder: (side: TableSide, time?: number) => void;
   resetExperience: (time?: number) => void;
   inactivityTimeout: (time?: number) => void;
@@ -88,7 +80,9 @@ const ONBOARDING_STORAGE_KEY = "gedulgt:onboarding-completed";
 const CANONICAL_DRINKS = GEDULGT_DRINKS.slice(0, 6);
 const FIRST_DRINK_ID = CANONICAL_DRINKS[0]?.id ?? GEDULGT_DRINKS[0]?.id ?? "";
 
-function getLiveState(time: number): Omit<GedulgtTableState, "onboardingCompleted"> {
+function getLiveState(
+  time: number,
+): Omit<GedulgtTableState, "onboardingCompleted"> {
   return {
     phase: "dormant",
     focusedDrinkId: FIRST_DRINK_ID,
@@ -262,7 +256,7 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
                 getCanonicalIndex(drinkId),
                 getCanonicalIndex(state.focusedDrinkId),
                 CANONICAL_DRINKS.length,
-            ),
+              ),
             cardFace: "front",
             trayFeedback: null,
             phase: state.phase === "trayFeedback" ? "browseWheel" : state.phase,
@@ -391,9 +385,8 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
         set((state) => ({
           trayFeedback: null,
           phase: state.phase === "trayFeedback" ? "browseWheel" : state.phase,
-          lastInteractionAt: state.phase === "trayFeedback"
-            ? state.lastInteractionAt
-            : time,
+          lastInteractionAt:
+            state.phase === "trayFeedback" ? state.lastInteractionAt : time,
         }));
       },
     }),
@@ -411,7 +404,9 @@ export function getCanonicalDrinks() {
   return CANONICAL_DRINKS;
 }
 
-export function getFocusedDrink(state: Pick<GedulgtTableState, "focusedDrinkId">) {
+export function getFocusedDrink(
+  state: Pick<GedulgtTableState, "focusedDrinkId">,
+) {
   return (
     CANONICAL_DRINKS.find((drink) => drink.id === state.focusedDrinkId) ??
     CANONICAL_DRINKS[0]

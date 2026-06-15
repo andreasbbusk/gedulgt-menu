@@ -162,7 +162,10 @@ describe("updateEngine - cooldown", () => {
 
 describe("updateEngine - FIST_TAP", () => {
   it("fires FIST_TAP on first frame fist is detected", () => {
-    const result = step(createEngineState(), frame("fist", { x: 100, y: 100 }, 100));
+    const result = step(
+      createEngineState(),
+      frame("fist", { x: 100, y: 100 }, 100),
+    );
 
     expect(result.event).toEqual({ type: "FIST_TAP" });
     expect(result.state.phase).toBe("cooldown");
@@ -185,7 +188,10 @@ describe("updateEngine - FIST_TAP", () => {
   });
 
   it("enters cooldown after firing", () => {
-    const result = step(createEngineState(), frame("fist", { x: 100, y: 100 }, 100));
+    const result = step(
+      createEngineState(),
+      frame("fist", { x: 100, y: 100 }, 100),
+    );
 
     expect(result.state.cooldownUntil).toBe(700);
   });
@@ -193,42 +199,60 @@ describe("updateEngine - FIST_TAP", () => {
 
 describe("updateEngine - SWIPE left/right", () => {
   it("sets swipeOrigin on first open-hand frame", () => {
-    const result = step(createEngineState(), frame("open", { x: 100, y: 100 }, 100));
+    const result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 100 }, 100),
+    );
 
     expect(result.event).toBeNull();
     expect(result.state.swipeOrigin).toEqual({ x: 100, y: 100 });
   });
 
   it("fires SWIPE right when dx exceeds swipeMinPx with sufficient velocity", () => {
-    let result = step(createEngineState(), frame("open", { x: 100, y: 100 }, 100));
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 100 }, 100),
+    );
     result = step(result.state, frame("open", { x: 230, y: 112 }, 300));
 
     expect(result.event).toEqual({ type: "SWIPE", direction: "right" });
   });
 
   it("fires SWIPE left when -dx exceeds swipeMinPx with sufficient velocity", () => {
-    let result = step(createEngineState(), frame("open", { x: 300, y: 100 }, 100));
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 300, y: 100 }, 100),
+    );
     result = step(result.state, frame("open", { x: 185, y: 95 }, 300));
 
     expect(result.event).toEqual({ type: "SWIPE", direction: "left" });
   });
 
   it("does not fire when dx is below swipeMinPx", () => {
-    let result = step(createEngineState(), frame("open", { x: 100, y: 100 }, 100));
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 100 }, 100),
+    );
     result = step(result.state, frame("open", { x: 199, y: 100 }, 300));
 
     expect(result.event).toBeNull();
   });
 
   it("does not fire when dy exceeds swipeMaxOffAxisPx", () => {
-    let result = step(createEngineState(), frame("open", { x: 100, y: 100 }, 100));
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 100 }, 100),
+    );
     result = step(result.state, frame("open", { x: 230, y: 151 }, 300));
 
     expect(result.event).toBeNull();
   });
 
   it("does not fire when velocity is below swipeMinVelocityPxMs", () => {
-    let result = step(createEngineState(), frame("open", { x: 100, y: 100 }, 0));
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 100 }, 0),
+    );
     result = step(result.state, frame("open", { x: 230, y: 100 }, 1_000));
 
     expect(result.event).toBeNull();
@@ -285,21 +309,30 @@ describe("updateEngine - SWIPE left/right", () => {
 
 describe("updateEngine - SWIPE_UP", () => {
   it("fires SWIPE_UP when -dy exceeds swipeUpMinPx with sufficient velocity", () => {
-    let result = step(createEngineState(), frame("open", { x: 100, y: 300 }, 100));
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 300 }, 100),
+    );
     result = step(result.state, frame("open", { x: 112, y: 205 }, 300));
 
     expect(result.event).toEqual({ type: "SWIPE_UP" });
   });
 
   it("does not fire when dx exceeds swipeUpMaxOffAxisPx", () => {
-    let result = step(createEngineState(), frame("open", { x: 100, y: 300 }, 100));
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 300 }, 100),
+    );
     result = step(result.state, frame("open", { x: 121, y: 205 }, 300));
 
     expect(result.event).toBeNull();
   });
 
   it("does not fire when velocity is below swipeUpMinVelocityPxMs", () => {
-    let result = step(createEngineState(), frame("open", { x: 100, y: 300 }, 0));
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 300 }, 0),
+    );
     result = step(result.state, frame("open", { x: 100, y: 205 }, 1_000));
 
     expect(result.event).toBeNull();
@@ -327,21 +360,30 @@ describe("updateEngine - SWIPE_UP", () => {
 
 describe("updateEngine - SWIPE_DOWN", () => {
   it("fires SWIPE_DOWN when dy exceeds swipeDownMinPx with sufficient velocity", () => {
-    let result = step(createEngineState(), frame("open", { x: 100, y: 200 }, 100));
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 200 }, 100),
+    );
     result = step(result.state, frame("open", { x: 112, y: 330 }, 300));
 
     expect(result.event).toEqual({ type: "SWIPE_DOWN" });
   });
 
   it("does not fire when dx exceeds swipeDownMaxOffAxisPx", () => {
-    let result = step(createEngineState(), frame("open", { x: 100, y: 200 }, 100));
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 200 }, 100),
+    );
     result = step(result.state, frame("open", { x: 121, y: 330 }, 300));
 
     expect(result.event).toBeNull();
   });
 
   it("does not fire when velocity is below swipeDownMinVelocityPxMs", () => {
-    let result = step(createEngineState(), frame("open", { x: 100, y: 200 }, 0));
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 200 }, 0),
+    );
     result = step(result.state, frame("open", { x: 100, y: 330 }, 1_000));
 
     expect(result.event).toBeNull();
@@ -470,14 +512,20 @@ describe("updateEngine - DOUBLE_OPEN", () => {
 
 describe("updateEngine - state threading", () => {
   it("lastSwipeDirection is set correctly after SWIPE fires", () => {
-    let result = step(createEngineState(), frame("open", { x: 100, y: 100 }, 100));
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 100 }, 100),
+    );
     result = step(result.state, frame("open", { x: 230, y: 100 }, 300));
 
     expect(result.state.lastSwipeDirection).toBe("right");
   });
 
   it("returnGuardUntil is set correctly after SWIPE fires", () => {
-    let result = step(createEngineState(), frame("open", { x: 100, y: 100 }, 100));
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 100 }, 100),
+    );
     result = step(result.state, frame("open", { x: 230, y: 100 }, 300));
 
     expect(result.state.returnGuardUntil).toBe(1_500);

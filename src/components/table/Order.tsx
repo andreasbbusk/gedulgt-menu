@@ -66,7 +66,11 @@ export function Order({ items, total, onReset }: OrderProps) {
   );
 
   return (
-    <section ref={rootRef} className="order-confirmation" aria-label="Your order">
+    <section
+      ref={rootRef}
+      className="order-confirmation"
+      aria-label="Your order"
+    >
       <span className="order-confirmation__brand">Gedulgt</span>
       <h2>Your order</h2>
       <div className="order-confirmation__items">

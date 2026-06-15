@@ -28,27 +28,27 @@ Implementation may represent `cardBack` as `phase: "browseWheel"` plus `cardFace
 
 ## Phases
 
-| Phase | Purpose | Entry | Exit |
-| --- | --- | --- | --- |
-| `dormant` | Hide the menu in a quiet branded light state. | Initial load, reset, inactivity timeout, deactivate. | Activation through hand/mouse edge well or first hand in light. |
-| `onboarding` | Teach and prove the required interactions. | Activation when onboarding is incomplete. | Complete swipe, tap, and drag-to-Tray steps. |
-| `browseWheel` | Main menu exploration. | Onboarding completion or activation after onboarding was already completed. | Flip, add, order confirmation, deactivate, timeout. |
-| `trayFeedback` | Short success or refusal feedback after an add attempt. | Add focused drink to Tray or attempt to exceed max order. | Automatically settles back to browse. |
-| `orderConfirmation` | Waiter-facing readable summary. | Confirm from Tray when at least one drink is selected. | Manual reset to dormant. |
+| Phase               | Purpose                                                 | Entry                                                                       | Exit                                                            |
+| ------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `dormant`           | Hide the menu in a quiet branded light state.           | Initial load, reset, inactivity timeout, deactivate.                        | Activation through hand/mouse edge well or first hand in light. |
+| `onboarding`        | Teach and prove the required interactions.              | Activation when onboarding is incomplete.                                   | Complete swipe, tap, and drag-to-Tray steps.                    |
+| `browseWheel`       | Main menu exploration.                                  | Onboarding completion or activation after onboarding was already completed. | Flip, add, order confirmation, deactivate, timeout.             |
+| `trayFeedback`      | Short success or refusal feedback after an add attempt. | Add focused drink to Tray or attempt to exceed max order.                   | Automatically settles back to browse.                           |
+| `orderConfirmation` | Waiter-facing readable summary.                         | Confirm from Tray when at least one drink is selected.                      | Manual reset to dormant.                                        |
 
 ## Semantic Actions
 
-| Action | Meaning | Mouse/Web Mapping | Future Gesture Mapping |
-| --- | --- | --- | --- |
-| `ACTIVATE` | Wake the menu from dormant. | Hold/click near/far edge well or initial interaction in the light cue. | Intentional activation gesture in projection area. |
-| `DEACTIVATE` | Return to dormant intentionally. | Hold near/far edge well for `1.2s`. | Same semantic hold gesture. |
-| `COMPLETE_ONBOARDING_STEP` | Mark current onboarding step successful. | Complete the requested mouse action. | Complete the requested hand action. |
-| `ROTATE_WHEEL` | Change the focused drink. | Horizontal drag/swipe. | Horizontal hand swipe. |
-| `TOGGLE_CARD_FACE` | Flip focused drink front/back. | Click focused card. | Future flip/reveal gesture. |
-| `ADD_FOCUSED_TO_TRAY` | Add focused drink quantity to Tray. | Drag/swipe focused card inward. | Inward hand movement toward Tray. |
-| `DECREMENT_TRAY_ITEM` | Reduce quantity/remove selected token. | Click/tap Tray token. | Future token remove gesture. |
-| `CONFIRM_ORDER` | Open waiter-readable order summary. | Click/tap Tray confirmation action. | Future confirm gesture. |
-| `RESET_EXPERIENCE` | Clear live state and return dormant. | Reset action in confirmation. | Future reset/deactivate gesture. |
+| Action                     | Meaning                                  | Mouse/Web Mapping                                                      | Future Gesture Mapping                             |
+| -------------------------- | ---------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------- |
+| `ACTIVATE`                 | Wake the menu from dormant.              | Hold/click near/far edge well or initial interaction in the light cue. | Intentional activation gesture in projection area. |
+| `DEACTIVATE`               | Return to dormant intentionally.         | Hold near/far edge well for `1.2s`.                                    | Same semantic hold gesture.                        |
+| `COMPLETE_ONBOARDING_STEP` | Mark current onboarding step successful. | Complete the requested mouse action.                                   | Complete the requested hand action.                |
+| `ROTATE_WHEEL`             | Change the focused drink.                | Horizontal drag/swipe.                                                 | Horizontal hand swipe.                             |
+| `TOGGLE_CARD_FACE`         | Flip focused drink front/back.           | Click focused card.                                                    | Future flip/reveal gesture.                        |
+| `ADD_FOCUSED_TO_TRAY`      | Add focused drink quantity to Tray.      | Drag/swipe focused card inward.                                        | Inward hand movement toward Tray.                  |
+| `DECREMENT_TRAY_ITEM`      | Reduce quantity/remove selected token.   | Click/tap Tray token.                                                  | Future token remove gesture.                       |
+| `CONFIRM_ORDER`            | Open waiter-readable order summary.      | Click/tap Tray confirmation action.                                    | Future confirm gesture.                            |
+| `RESET_EXPERIENCE`         | Clear live state and return dormant.     | Reset action in confirmation.                                          | Future reset/deactivate gesture.                   |
 
 Exact gesture recognition thresholds are intentionally not defined yet.
 
