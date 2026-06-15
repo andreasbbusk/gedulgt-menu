@@ -13,6 +13,7 @@
   "dependencies": {
     "@gsap/react": "^2.1.2",
     "@mediapipe/tasks-vision": "^0.10.35",
+    "@tanstack/react-hotkeys": "^0.10.0",
     "gsap": "^3.15.0",
     "lucide-react": "^1.17.0",
     "react": "^19.2.6",

@@ -1,5 +1,4 @@
 import type {
-  InteractionSource,
   OnboardingStep,
   RotateDirection,
   TableSide,
@@ -13,10 +12,6 @@ export const FEEDBACK_SETTLE_MS = 950;
 
 export function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
-}
-
-export function getSource(pointerType: string): InteractionSource {
-  return pointerType === "touch" ? "touch" : "mouse";
 }
 
 export function getSide(clientY: number, element: HTMLElement | null): TableSide {

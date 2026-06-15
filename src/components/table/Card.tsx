@@ -1,6 +1,7 @@
 import { memo, type CSSProperties } from 'react';
 import type { GedulgtDrink } from '../../data/gedulgtDrinks';
 import type { TableSide } from '../../store/gedulgtTableStore';
+import { getDrinkImageSrc } from './drinkAssets';
 import { cx } from './utils';
 
 type CardProps = {
@@ -12,21 +13,6 @@ type CardProps = {
 	onClick: (drinkId: string, side: TableSide) => void;
 };
 
-const imageHrefCache = new Map<string, string>();
-
-function getDrinkImageHref(imageName: string) {
-	const cached = imageHrefCache.get(imageName);
-
-	if (cached) {
-		return cached;
-	}
-
-	const href = new URL(`../../assets/${imageName}`, import.meta.url).href;
-	imageHrefCache.set(imageName, href);
-
-	return href;
-}
-
 export const Card = memo(function Card({
 	drink,
 	side,
@@ -37,7 +23,7 @@ export const Card = memo(function Card({
 }: CardProps) {
 	const showBack = focused && face === 'back';
 	const denseIngredients = drink.ingredients.length > 5;
-	const pngImage = getDrinkImageHref(drink.pngImage);
+	const imageSrc = getDrinkImageSrc(drink.imageId);
 	const drinkAccent =
 		(drink as GedulgtDrink & { accent?: string }).accent ?? '#78b99a';
 
@@ -67,7 +53,7 @@ export const Card = memo(function Card({
 				<span className='table-drink-card__face table-drink-card__face--front'>
 					<span className='table-drink-card__name'>{drink.name}</span>
 					<img
-						src={pngImage}
+						src={imageSrc}
 						alt={drink.name}
 						className='drink-card__image'
 						decoding='async'
