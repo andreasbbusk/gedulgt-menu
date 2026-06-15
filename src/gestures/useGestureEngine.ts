@@ -1,6 +1,5 @@
 import { useCallback, useRef } from "react";
 import { useHandTracking } from "./useHandTracking";
-import { dispatchGestureEvent } from "./gestureActions";
 import { createEngineState, defaultConfig, updateEngine } from "./gestureEngine";
 import type { EngineInput, EngineState } from "./gestureEngine";
 import { useGedulgtTableStore } from "../store/gedulgtTableStore";
@@ -55,22 +54,31 @@ export function useGestureEngine({
 
       if (event.type === "DOUBLE_OPEN") {
         if (phase === "dormant") {
-          activate("near", "gesture", now);
+          activate("near", now);
         } else {
-          deactivate("near", "gesture", now);
+          deactivate("near", now);
         }
         return;
       }
 
-      if (event.type === "SWIPE_DOWN") {
-        decrementTrayItem(focusedDrinkId, "near", "gesture", now);
+      if (event.type === "SWIPE") {
+        rotateWheel(event.direction === "left" ? "previous" : "next", "near", now);
+        return;
       }
 
-      dispatchGestureEvent(
-        event,
-        { rotateWheel, toggleCardFace, addFocusedToTray },
-        now,
-      );
+      if (event.type === "FIST_TAP") {
+        toggleCardFace("near", now);
+        return;
+      }
+
+      if (event.type === "SWIPE_UP") {
+        addFocusedToTray("near", now);
+        return;
+      }
+
+      if (event.type === "SWIPE_DOWN") {
+        decrementTrayItem(focusedDrinkId, "near", now);
+      }
     },
     [
       rotateWheel,

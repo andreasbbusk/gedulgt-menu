@@ -5,11 +5,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type RefObject,
 } from "react";
-import type {
-  InteractionSource,
-  RotateDirection,
-  TableSide,
-} from "../../store/gedulgtTableStore";
+import type { RotateDirection, TableSide } from "../../store/gedulgtTableStore";
 import {
   POINTER_CLICK_SUPPRESS_DISTANCE,
   POINTER_CLICK_SUPPRESS_MS,
@@ -18,7 +14,6 @@ import {
   getInwardSign,
   getRotation,
   getSide,
-  getSource,
   isIgnoredTarget,
 } from "./utils";
 
@@ -27,7 +22,6 @@ type DragState = {
   startX: number;
   startY: number;
   side: TableSide;
-  source: InteractionSource;
   startedOnCard: boolean;
   suppressClick: boolean;
   consumed: boolean;
@@ -35,12 +29,8 @@ type DragState = {
 
 type UsePointerInputOptions = {
   tableRef: RefObject<HTMLElement | null>;
-  onAdd: (side: TableSide, source: InteractionSource) => void;
-  onRotate: (
-    direction: RotateDirection,
-    side: TableSide,
-    source: InteractionSource,
-  ) => void;
+  onAdd: (side: TableSide) => void;
+  onRotate: (direction: RotateDirection, side: TableSide) => void;
 };
 
 export function usePointerInput({
@@ -70,7 +60,6 @@ export function usePointerInput({
         startX: event.clientX,
         startY: event.clientY,
         side: getSide(event.clientY, tableRef.current),
-        source: getSource(event.pointerType),
         startedOnCard: Boolean(card),
         suppressClick: false,
         consumed: false,
@@ -108,7 +97,7 @@ export function usePointerInput({
         drag.consumed = true;
         drag.suppressClick = true;
         suppressUntilRef.current = performance.now() + POINTER_CLICK_SUPPRESS_MS;
-        onAdd(drag.side, drag.source);
+        onAdd(drag.side);
         return;
       }
 
@@ -116,7 +105,7 @@ export function usePointerInput({
         drag.consumed = true;
         drag.suppressClick = true;
         suppressUntilRef.current = performance.now() + POINTER_CLICK_SUPPRESS_MS;
-        onRotate(getRotation(deltaX), drag.side, drag.source);
+        onRotate(getRotation(deltaX), drag.side);
       }
     },
     [onAdd, onRotate],

@@ -83,7 +83,7 @@ describe("createEngineState", () => {
 describe("defaultConfig", () => {
   it("returns correct proportional values for given screen dimensions", () => {
     expect(defaultConfig(1000, 800)).toEqual({
-      swipeMinPx: 120,
+      swipeMinPx: 130,
       swipeMaxOffAxisPx: 144,
       swipeMinVelocityPxMs: 0.25,
       swipeUpMinPx: 112.00000000000001,

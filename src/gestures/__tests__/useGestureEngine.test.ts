@@ -93,7 +93,6 @@ describe("useGestureEngine", () => {
     expect(mocks.store.decrementTrayItem).toHaveBeenCalledWith(
       "test-drink",
       "near",
-      "gesture",
       12_349,
     );
     expect(mocks.store.addFocusedToTray).not.toHaveBeenCalled();
