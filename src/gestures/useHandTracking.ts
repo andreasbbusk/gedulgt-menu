@@ -10,10 +10,17 @@ const FRAME_MS  = 1000 / 30;
 
 export type TrackingStatus = "idle" | "requesting-permission" | "loading" | "ready" | "error";
 
+export type HandData = {
+  pose: HandPose;
+  projectedPoint: { x: number; y: number } | null;
+};
+
 export type TrackingFrame = {
   hasHand: boolean;
   pose: HandPose;
   projectedPoint: { x: number; y: number } | null;
+  handCount: number;
+  hands: [HandData | null, HandData | null];
   time: number;
 };
 
@@ -38,6 +45,8 @@ const EMPTY_FRAME: TrackingFrame = {
   hasHand: false,
   pose: "unknown",
   projectedPoint: null,
+  handCount: 0,
+  hands: [null, null],
   time: 0,
 };
 
@@ -83,17 +92,30 @@ export function useHandTracking(
         lastFrameAt   = now;
 
         const result = landmarker.detectForVideo(video, now);
-        const lms    = result.landmarks[0] as Pt[] | undefined;
+        const hands: [HandData | null, HandData | null] = [null, null];
 
-        if (lms && lms.length >= 21) {
-          const palmCenter     = avg(lms, [0, 5, 9, 13, 17]);
-          const palmScreenPt   = toScreenPt(palmCenter, mirrorX);
-          const projectedPoint = projectPointToTable(palmScreenPt) ?? null;
+        for (let i = 0; i < 2; i += 1) {
+          const lms = result.landmarks[i] as Pt[] | undefined;
 
+          if (lms && lms.length >= 21) {
+            const palmCenter     = avg(lms, [0, 5, 9, 13, 17]);
+            const palmScreenPt   = toScreenPt(palmCenter, mirrorX);
+            const projectedPoint = projectPointToTable(palmScreenPt) ?? null;
+
+            hands[i] = { pose: classifyPose(lms), projectedPoint };
+          }
+        }
+
+        const primaryHand = hands[0];
+        const handCount   = hands.filter(Boolean).length;
+
+        if (primaryHand) {
           onFrameRef.current({
             hasHand: true,
-            pose: classifyPose(lms),
-            projectedPoint,
+            pose: primaryHand.pose,
+            projectedPoint: primaryHand.projectedPoint,
+            handCount,
+            hands,
             time: now,
           });
         } else {
@@ -126,7 +148,7 @@ export function useHandTracking(
 
       landmarker = await HandLandmarker.createFromOptions(vision, {
         baseOptions: { modelAssetPath: MODEL_URL },
-        numHands: 1,
+        numHands: 2,
         runningMode: "VIDEO",
       });
 

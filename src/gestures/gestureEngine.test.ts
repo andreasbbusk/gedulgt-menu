@@ -17,6 +17,8 @@ const config: EngineConfig = {
   fistTapMaxMs: 300,
   cooldownMs: 600,
   returnGuardMs: 1200,
+  doubleOpenDwellMs: 600,
+  doubleOpenMoveTolerance: 10,
 };
 
 function frame(
@@ -25,7 +27,30 @@ function frame(
   time: number,
   hasHand = true,
 ): EngineInput {
-  return { pose, point, hasHand, time };
+  return {
+    pose,
+    point,
+    hasHand,
+    hands: hasHand ? [{ pose, point }, null] : [null, null],
+    time,
+  };
+}
+
+function doubleOpenFrame(
+  first: EngineInput["point"],
+  second: EngineInput["point"],
+  time: number,
+): EngineInput {
+  return {
+    pose: "open",
+    point: first,
+    hasHand: true,
+    hands: [
+      { pose: "open", point: first },
+      { pose: "open", point: second },
+    ],
+    time,
+  };
 }
 
 function step(
@@ -45,6 +70,8 @@ describe("gestureEngine", () => {
       cooldownUntil: 0,
       lastSwipeDirection: null,
       returnGuardUntil: 0,
+      doubleOpenSince: 0,
+      doubleOpenAnchor: [null, null],
     });
   });
 
@@ -58,6 +85,8 @@ describe("gestureEngine", () => {
       fistTapMaxMs: 300,
       cooldownMs: 600,
       returnGuardMs: 1200,
+      doubleOpenDwellMs: 600,
+      doubleOpenMoveTolerance: 30,
     });
   });
 
@@ -166,5 +195,73 @@ describe("gestureEngine", () => {
     expect(result.event).toBeNull();
     expect(result.state.phase).toBe("tracking");
     expect(result.state.pose).toBe("unknown");
+  });
+
+  it("fires double open after both hands dwell without drifting", () => {
+    let result = step(
+      createEngineState(),
+      doubleOpenFrame({ x: 100, y: 100 }, { x: 300, y: 100 }, 100),
+    );
+
+    expect(result.event).toBeNull();
+    expect(result.state.doubleOpenSince).toBe(100);
+    expect(result.state.doubleOpenAnchor).toEqual([
+      { x: 100, y: 100 },
+      { x: 300, y: 100 },
+    ]);
+
+    result = step(
+      result.state,
+      doubleOpenFrame({ x: 104, y: 103 }, { x: 297, y: 102 }, 700),
+    );
+
+    expect(result.event).toEqual({ type: "DOUBLE_OPEN" });
+    expect(result.state.cooldownUntil).toBe(1_300);
+  });
+
+  it("resets double open dwell when a hand drifts beyond tolerance", () => {
+    let result = step(
+      createEngineState(),
+      doubleOpenFrame({ x: 100, y: 100 }, { x: 300, y: 100 }, 100),
+    );
+
+    result = step(
+      result.state,
+      doubleOpenFrame({ x: 125, y: 100 }, { x: 300, y: 100 }, 300),
+    );
+
+    expect(result.event).toBeNull();
+    expect(result.state.doubleOpenSince).toBe(300);
+    expect(result.state.doubleOpenAnchor).toEqual([
+      { x: 125, y: 100 },
+      { x: 300, y: 100 },
+    ]);
+
+    result = step(
+      result.state,
+      doubleOpenFrame({ x: 127, y: 100 }, { x: 300, y: 100 }, 800),
+    );
+
+    expect(result.event).toBeNull();
+
+    result = step(
+      result.state,
+      doubleOpenFrame({ x: 127, y: 100 }, { x: 300, y: 100 }, 900),
+    );
+
+    expect(result.event).toEqual({ type: "DOUBLE_OPEN" });
+  });
+
+  it("clears double open tracking when both hands are not open", () => {
+    let result = step(
+      createEngineState(),
+      doubleOpenFrame({ x: 100, y: 100 }, { x: 300, y: 100 }, 100),
+    );
+
+    result = step(result.state, frame("open", { x: 100, y: 100 }, 200));
+
+    expect(result.event).toBeNull();
+    expect(result.state.doubleOpenSince).toBe(0);
+    expect(result.state.doubleOpenAnchor).toEqual([null, null]);
   });
 });

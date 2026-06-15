@@ -1,16 +1,19 @@
 export type GestureEvent =
   | { type: "SWIPE"; direction: "left" | "right" }
   | { type: "FIST_TAP" }
-  | { type: "SWIPE_UP" };
+  | { type: "SWIPE_UP" }
+  | { type: "DOUBLE_OPEN" };
 
 export type GesturePhase = "idle" | "tracking" | "cooldown";
 
 type Pt = { x: number; y: number };
+type EngineHand = { pose: "open" | "fist" | "unknown"; point: Pt } | null;
 
 export type EngineInput = {
   pose: "open" | "fist" | "unknown";
   point: Pt;
   hasHand: boolean;
+  hands: [EngineHand, EngineHand];
   time: number;
 };
 
@@ -23,6 +26,8 @@ export type EngineConfig = {
   fistTapMaxMs: number; // fist must close and be detected within this window
   cooldownMs: number;
   returnGuardMs: number;
+  doubleOpenDwellMs: number;
+  doubleOpenMoveTolerance: number;
 };
 
 export type EngineState = {
@@ -33,6 +38,8 @@ export type EngineState = {
   cooldownUntil: number;
   lastSwipeDirection: "left" | "right" | null;
   returnGuardUntil: number;
+  doubleOpenSince: number;
+  doubleOpenAnchor: [Pt | null, Pt | null];
 };
 
 export function defaultConfig(screenW: number, screenH: number): EngineConfig {
@@ -45,6 +52,8 @@ export function defaultConfig(screenW: number, screenH: number): EngineConfig {
     fistTapMaxMs: 300,
     cooldownMs: 600,
     returnGuardMs: 1200,
+    doubleOpenDwellMs: 500,
+    doubleOpenMoveTolerance: screenW * 0.03,
   };
 }
 
@@ -57,6 +66,8 @@ export function createEngineState(): EngineState {
     cooldownUntil: 0,
     lastSwipeDirection: null,
     returnGuardUntil: 0,
+    doubleOpenSince: 0,
+    doubleOpenAnchor: [null, null],
   };
 }
 
@@ -65,22 +76,6 @@ export function updateEngine(
   input: EngineInput,
   config: EngineConfig,
 ): { state: EngineState; event: GestureEvent | null } {
-  const fire = (event: GestureEvent) => ({
-    state: {
-      ...state,
-      phase: "cooldown" as const,
-      cooldownUntil: input.time + config.cooldownMs,
-      swipeOrigin: null,
-      lastSwipeDirection:
-        event.type === "SWIPE" ? event.direction : state.lastSwipeDirection,
-      returnGuardUntil:
-        event.type === "SWIPE"
-          ? input.time + config.returnGuardMs
-          : state.returnGuardUntil,
-    },
-    event,
-  });
-
   if (!input.hasHand) {
     return { state: createEngineState(), event: null };
   }
@@ -89,12 +84,99 @@ export function updateEngine(
     return { state: { ...state, phase: "cooldown" }, event: null };
   }
 
-  const poseChanged = input.pose !== state.pose;
-  const poseStart = poseChanged ? input.time : state.poseStart;
+  const bothOpen =
+    input.hands[0]?.pose === "open" && input.hands[1]?.pose === "open";
+
+  if (bothOpen) {
+    const anchor0 = state.doubleOpenAnchor[0] ?? input.hands[0]?.point ?? null;
+    const anchor1 = state.doubleOpenAnchor[1] ?? input.hands[1]?.point ?? null;
+
+    const drift0 = anchor0 && input.hands[0]?.point
+      ? Math.hypot(
+          input.hands[0].point.x - anchor0.x,
+          input.hands[0].point.y - anchor0.y,
+        )
+      : 0;
+    const drift1 = anchor1 && input.hands[1]?.point
+      ? Math.hypot(
+          input.hands[1].point.x - anchor1.x,
+          input.hands[1].point.y - anchor1.y,
+        )
+      : 0;
+
+    const handsMoved =
+      drift0 > config.doubleOpenMoveTolerance ||
+      drift1 > config.doubleOpenMoveTolerance;
+
+    if (handsMoved) {
+      return {
+        state: {
+          ...state,
+          doubleOpenSince: input.time,
+          doubleOpenAnchor: [
+            input.hands[0]?.point ?? null,
+            input.hands[1]?.point ?? null,
+          ],
+        },
+        event: null,
+      };
+    }
+
+    const hasDoubleOpenAnchor =
+      state.doubleOpenAnchor[0] !== null && state.doubleOpenAnchor[1] !== null;
+    const doubleOpenSince = hasDoubleOpenAnchor
+      ? state.doubleOpenSince
+      : input.time;
+    const dwellAge = input.time - doubleOpenSince;
+
+    if (dwellAge >= config.doubleOpenDwellMs) {
+      return {
+        state: {
+          ...createEngineState(),
+          cooldownUntil: input.time + config.cooldownMs,
+        },
+        event: { type: "DOUBLE_OPEN" },
+      };
+    }
+
+    return {
+      state: {
+        ...state,
+        doubleOpenSince,
+        doubleOpenAnchor: [anchor0, anchor1],
+      },
+      event: null,
+    };
+  }
+
+  const clearedState: EngineState = {
+    ...state,
+    doubleOpenSince: 0,
+    doubleOpenAnchor: [null, null],
+  };
+
+  const fire = (event: GestureEvent) => ({
+    state: {
+      ...clearedState,
+      phase: "cooldown" as const,
+      cooldownUntil: input.time + config.cooldownMs,
+      swipeOrigin: null,
+      lastSwipeDirection:
+        event.type === "SWIPE" ? event.direction : clearedState.lastSwipeDirection,
+      returnGuardUntil:
+        event.type === "SWIPE"
+          ? input.time + config.returnGuardMs
+          : clearedState.returnGuardUntil,
+    },
+    event,
+  });
+
+  const poseChanged = input.pose !== clearedState.pose;
+  const poseStart = poseChanged ? input.time : clearedState.poseStart;
   const poseAge = input.time - poseStart;
 
   const next: EngineState = {
-    ...state,
+    ...clearedState,
     phase: "tracking",
     pose: input.pose,
     poseStart,
@@ -110,11 +192,11 @@ export function updateEngine(
   }
 
   if (input.pose === "open") {
-    if (poseChanged || !state.swipeOrigin) {
+    if (poseChanged || !clearedState.swipeOrigin) {
       return { state: { ...next, swipeOrigin: input.point }, event: null };
     }
 
-    const origin = state.swipeOrigin;
+    const origin = clearedState.swipeOrigin;
     const dx = input.point.x - origin.x;
     const dy = input.point.y - origin.y; // negative = upward in screen coords
     const elapsed = Math.max(poseAge, 1);
@@ -131,9 +213,9 @@ export function updateEngine(
     // Horizontal swipe
     const direction = dx < 0 ? "left" : "right";
     const isReturnStroke =
-      state.lastSwipeDirection !== null &&
-      direction !== state.lastSwipeDirection &&
-      input.time < state.returnGuardUntil;
+      clearedState.lastSwipeDirection !== null &&
+      direction !== clearedState.lastSwipeDirection &&
+      input.time < clearedState.returnGuardUntil;
 
     if (
       Math.abs(dx) >= config.swipeMinPx &&

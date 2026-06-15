@@ -2,7 +2,7 @@ import { useCallback, useRef } from "react";
 import { useHandTracking } from "./useHandTracking";
 import { dispatchGestureEvent } from "./gestureActions";
 import { createEngineState, defaultConfig, updateEngine } from "./gestureEngine";
-import type { EngineState } from "./gestureEngine";
+import type { EngineInput, EngineState } from "./gestureEngine";
 import { useGedulgtTableStore } from "../store/gedulgtTableStore";
 import type { TrackingFrame } from "./useHandTracking";
 
@@ -17,6 +17,9 @@ export function useGestureEngine({
   const rotateWheel    = useGedulgtTableStore((s) => s.rotateWheel);
   const toggleCardFace = useGedulgtTableStore((s) => s.toggleCardFace);
   const addFocusedToTray = useGedulgtTableStore((s) => s.addFocusedToTray);
+  const phase          = useGedulgtTableStore((s) => s.phase);
+  const activate       = useGedulgtTableStore((s) => s.activate);
+  const deactivate     = useGedulgtTableStore((s) => s.deactivate);
 
   const handleFrame = useCallback(
     (frame: TrackingFrame) => {
@@ -32,6 +35,11 @@ export function useGestureEngine({
           pose: frame.pose,
           point: frame.projectedPoint,
           hasHand: frame.hasHand,
+          hands: frame.hands.map((h) =>
+            h?.projectedPoint
+              ? { pose: h.pose, point: h.projectedPoint }
+              : null,
+          ) as EngineInput["hands"],
           time: frame.time,
         },
         config,
@@ -41,13 +49,31 @@ export function useGestureEngine({
 
       if (!event) return;
 
+      const now = Date.now();
+
+      if (event.type === "DOUBLE_OPEN") {
+        if (phase === "dormant") {
+          activate("near", "gesture", now);
+        } else {
+          deactivate("near", "gesture", now);
+        }
+        return;
+      }
+
       dispatchGestureEvent(
         event,
         { rotateWheel, toggleCardFace, addFocusedToTray },
-        Date.now(),
+        now,
       );
     },
-    [rotateWheel, toggleCardFace, addFocusedToTray],
+    [
+      rotateWheel,
+      toggleCardFace,
+      addFocusedToTray,
+      phase,
+      activate,
+      deactivate,
+    ],
   );
 
   const { videoRef, status, error } = useHandTracking(handleFrame, {
