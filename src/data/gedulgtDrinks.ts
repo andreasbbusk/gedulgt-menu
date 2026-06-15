@@ -8,7 +8,6 @@ export type GedulgtSection = {
   title: string;
   shortTitle: string;
   description: string;
-  accent: string;
 };
 
 export type GedulgtDrink = {
@@ -20,7 +19,8 @@ export type GedulgtDrink = {
   ingredients: string[];
   price: string;
   creator: string;
-  accent: string;
+  glyphId: 1 | 2 | 3 | 4;
+  pngImage: string;
 };
 
 export const GEDULGT_SECTIONS: GedulgtSection[] = [
@@ -30,7 +30,6 @@ export const GEDULGT_SECTIONS: GedulgtSection[] = [
     shortTitle: "Everchanging",
     description:
       "Cocktails inspired by Gedulgt's surroundings and the world outside the hidden door.",
-    accent: "#6ec8a4",
   },
   {
     id: "out-of-this-world",
@@ -38,7 +37,6 @@ export const GEDULGT_SECTIONS: GedulgtSection[] = [
     shortTitle: "Out There",
     description:
       "Playful, imaginative cocktails where the bar lets loose and follows the strange idea.",
-    accent: "#d89a48",
   },
   {
     id: "the-beginning-of-the-world",
@@ -46,7 +44,6 @@ export const GEDULGT_SECTIONS: GedulgtSection[] = [
     shortTitle: "The Beginning",
     description:
       "Gedulgt's view of cocktail origins: classic silhouettes with a modern twist.",
-    accent: "#cf6f82",
   },
 ];
 
@@ -69,7 +66,8 @@ export const GEDULGT_DRINKS: GedulgtDrink[] = [
     ],
     price: "110,-",
     creator: "Mia Hjorth",
-    accent: "#6ec8a4",
+    glyphId: 1,
+    pngImage: "cocktail1.webp",
   },
   {
     id: "how-about-them-olives",
@@ -87,7 +85,8 @@ export const GEDULGT_DRINKS: GedulgtDrink[] = [
     ],
     price: "110,-",
     creator: "Mia Hjorth",
-    accent: "#7dbf78",
+    glyphId: 2,
+    pngImage: "cocktail2.webp",
   },
   {
     id: "wake-me-up-before-you-co-co",
@@ -106,7 +105,8 @@ export const GEDULGT_DRINKS: GedulgtDrink[] = [
     ],
     price: "130,-",
     creator: "Julie Kjarsgaard, Lajos Kis & Erika Karko",
-    accent: "#c8a36e",
+    glyphId: 3,
+    pngImage: "cocktail3.webp",
   },
   {
     id: "can-can",
@@ -117,7 +117,8 @@ export const GEDULGT_DRINKS: GedulgtDrink[] = [
     ingredients: ["Plymouth sloe gin", "Pimm's", "Lime", "Ginger beer"],
     price: "120,-",
     creator: "Bastian Leander",
-    accent: "#d89a48",
+    glyphId: 4,
+    pngImage: "cocktail4.webp",
   },
   {
     id: "american-beauty",
@@ -137,7 +138,8 @@ export const GEDULGT_DRINKS: GedulgtDrink[] = [
     ],
     price: "140,-",
     creator: "Bastian Leander & Hasse Johansen",
-    accent: "#d9786f",
+    glyphId: 1,
+    pngImage: "cocktail5.webp",
   },
   {
     id: "pop-pop-popcorn",
@@ -153,58 +155,62 @@ export const GEDULGT_DRINKS: GedulgtDrink[] = [
     ],
     price: "120,-",
     creator: "Bastian Leander",
-    accent: "#e3bd5f",
+    glyphId: 2,
+    pngImage: "cocktail6.webp",
   },
-  {
-    id: "orange-chocolate-negroni",
-    sectionId: "the-beginning-of-the-world",
-    name: "Orange Chocolate Negroni",
-    description: "Bitter & Sweet",
-    flavorTags: ["Bitter", "Sweet"],
-    ingredients: [
-      "Copenhagen Distillery orange gin",
-      "Campari",
-      "Vittore sweet red vermouth",
-      "Creme de cacao",
-    ],
-    price: "135,-",
-    creator: "Mads Schack & Bastian Leander",
-    accent: "#cf6f82",
-  },
-  {
-    id: "rum-old-fashioned",
-    sectionId: "the-beginning-of-the-world",
-    name: "Rum Old Fashioned",
-    description: "Comforting & Spirituous",
-    flavorTags: ["Comforting", "Spirituous"],
-    ingredients: [
-      "Great Dane aged rum",
-      "Vittore sweet red vermouth",
-      "Ruby portwine",
-      "Maple syrup",
-      "House chocolate bitter",
-      "Orange zest",
-    ],
-    price: "135,-",
-    creator: "Hasse Johansen",
-    accent: "#ba8556",
-  },
-  {
-    id: "cotton-candy-champagne-cocktail",
-    sectionId: "the-beginning-of-the-world",
-    name: "Cotton Candy Champagne Cocktail",
-    description: "Dry & Nostalgic",
-    flavorTags: ["Dry", "Nostalgic"],
-    ingredients: [
-      "Ellenor elderflower liqueur",
-      "J. Charpentier Brut Champagne",
-      "Cotton candy",
-      "Served separately",
-    ],
-    price: "150,-",
-    creator: "Bastian Leander",
-    accent: "#d989b4",
-  },
+  // {
+  //   id: "orange-chocolate-negroni",
+  //   sectionId: "the-beginning-of-the-world",
+  //   name: "Orange Chocolate Negroni",
+  //   description: "Bitter & Sweet",
+  //   flavorTags: ["Bitter", "Sweet"],
+  //   ingredients: [
+  //     "Copenhagen Distillery orange gin",
+  //     "Campari",
+  //     "Vittore sweet red vermouth",
+  //     "Creme de cacao",
+  //   ],
+  //   price: "135,-",
+  //   creator: "Mads Schack & Bastian Leander",
+  //   glyphId: 3,
+  //   pngImage: "cocktail1.webp",
+  // },
+  // {
+  //   id: "rum-old-fashioned",
+  //   sectionId: "the-beginning-of-the-world",
+  //   name: "Rum Old Fashioned",
+  //   description: "Comforting & Spirituous",
+  //   flavorTags: ["Comforting", "Spirituous"],
+  //   ingredients: [
+  //     "Great Dane aged rum",
+  //     "Vittore sweet red vermouth",
+  //     "Ruby portwine",
+  //     "Maple syrup",
+  //     "House chocolate bitter",
+  //     "Orange zest",
+  //   ],
+  //   price: "135,-",
+  //   creator: "Hasse Johansen",
+  //   glyphId: 4,
+  //   pngImage: "cocktail2.webp",
+  // },
+  // {
+  //   id: "cotton-candy-champagne-cocktail",
+  //   sectionId: "the-beginning-of-the-world",
+  //   name: "Cotton Candy Champagne Cocktail",
+  //   description: "Dry & Nostalgic",
+  //   flavorTags: ["Dry", "Nostalgic"],
+  //   ingredients: [
+  //     "Ellenor elderflower liqueur",
+  //     "J. Charpentier Brut Champagne",
+  //     "Cotton candy",
+  //     "Served separately",
+  //   ],
+  //   price: "150,-",
+  //   creator: "Bastian Leander",
+  //   glyphId: 2,
+  //   pngImage: "cocktail3.webp",
+  // },
 ];
 
 export function getSectionById(sectionId: GedulgtSectionId) {
