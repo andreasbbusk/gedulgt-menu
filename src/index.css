@@ -32,8 +32,7 @@ body,
 	height: 100%;
 	min-height: 100%;
 	margin: 0;
-	background:
-		radial-gradient(circle at 50% 50%, #11140f 0%, #050706 64%), var(--tabletop);
+	background: var(--tabletop);
 }
 
 body {
@@ -64,13 +63,27 @@ p {
 	place-items: center;
 	overflow: hidden;
 	isolation: isolate;
-	background:
-		radial-gradient(
-			ellipse 72% 46% at 48% 46%,
-			rgba(50, 66, 47, 0.22),
-			transparent 70%
-		),
-		linear-gradient(135deg, #030403 0%, #090d0a 46%, #020302 100%);
+	background-color: hsla(95, 0%, 0%, 1);
+	background-image:
+		radial-gradient(at 88% 79%, rgb(43, 52, 83) 0px, transparent 50%),
+		radial-gradient(at 13% 9%, rgb(67, 82, 37) 0px, transparent 50%);
+	animation: gradient 13s ease infinite;
+	background-size: 200% 200%;
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 20%;
+	}
+	25% {
+		background-position: 100% 50%;
+	}
+	50% {
+		background-position: 50% 70%;
+	}
+	100% {
+		background-position: 0% 20%;
+	}
 }
 
 .projection-table {
@@ -206,16 +219,6 @@ p {
 	display: grid;
 	place-items: center;
 	color: var(--projected);
-}
-
-.dormant-state__halo {
-	position: absolute;
-	inset: 0;
-	border-radius: 50%;
-	background:
-		radial-gradient(circle, rgba(244, 238, 226, 0.26), transparent 22%),
-		radial-gradient(circle, rgba(199, 155, 91, 0.18), transparent 55%);
-	filter: blur(6px);
 }
 
 .dormant-state__mark {
@@ -469,8 +472,8 @@ p {
 	left: 50%;
 	top: 50%;
 	z-index: 20;
-	width: clamp(226px, 34vmin, 330px);
-	height: clamp(226px, 34vmin, 330px);
+	width: clamp(238px, 38vmin, 372px);
+	height: clamp(238px, 38vmin, 372px);
 	display: grid;
 	place-items: center;
 	pointer-events: none;
@@ -479,8 +482,8 @@ p {
 
 .tray__feedback-pulse {
 	position: absolute;
-	inset: 16%;
-	border: 1px solid color-mix(in srgb, var(--drink-accent) 44%, transparent);
+	inset: 2%;
+	border: 1px solid color-mix(in srgb, var(--drink-accent) 18%, transparent);
 	border-radius: 50%;
 	opacity: 0;
 }
@@ -488,16 +491,20 @@ p {
 .tray__core {
 	position: relative;
 	z-index: 2;
-	width: clamp(214px, 30vmin, 300px);
+	width: 100%;
 	aspect-ratio: 1;
-	border: 1px solid rgba(244, 238, 226, 0.17);
+	border: 1px solid rgba(255, 255, 255, 0.06);
 	border-radius: 50%;
-	background:
-		radial-gradient(circle, rgba(244, 238, 226, 0.13), transparent 56%),
-		rgba(5, 7, 6, 0.58);
+	background: #1e1e1e;
 	box-shadow:
-		inset 0 0 24px rgba(244, 238, 226, 0.05),
-		0 0 40px rgba(199, 155, 91, 0.14);
+		inset 0 0 0 10px #161616,
+		inset 0 0 0 11px rgba(255, 255, 255, 0.04),
+		inset 0 0 0 14px #101010;
+}
+
+.tray__core::before,
+.tray__core::after {
+	content: none;
 }
 
 .tray__tokens {
@@ -510,8 +517,8 @@ p {
 	left: 50%;
 	top: 50%;
 	z-index: 3;
-	width: 75px;
-	height: 75px;
+	width: 96px;
+	height: 96px;
 	display: grid;
 	place-items: center;
 	border: none;
@@ -531,8 +538,8 @@ p {
 	position: absolute;
 	left: 50%;
 	top: 50%;
-	min-width: 26px;
-	height: 26px;
+	min-width: 28px;
+	height: 28px;
 	padding: 0 5px;
 	display: grid;
 	place-items: center;
@@ -736,9 +743,9 @@ p {
 }
 
 .drink-card__image {
-	width: 60%;
+	width: 72%;
 	height: auto;
-	max-width: 90px;
+	max-width: 116px;
 }
 @media (max-width: 760px) {
 	.projection-table {
@@ -756,8 +763,8 @@ p {
 	}
 
 	.tray-token {
-		width: 42px;
-		height: 42px;
+		width: 56px;
+		height: 56px;
 	}
 
 	.onboarding-guide {
@@ -768,5 +775,4 @@ p {
 	.order-confirmation {
 		width: min(72%, 340px);
 	}
-
 }
