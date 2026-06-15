@@ -187,7 +187,6 @@ export function Tray({
 				onClick={(event) => {
 					onConfirm(getSide(event.clientY, trayRef.current));
 				}}>
-				<span>Order drinks</span>
 				{hasItems && <strong>{formatPrice(total)}</strong>}
 			</button>
 		</section>
