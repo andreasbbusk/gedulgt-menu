@@ -14,8 +14,8 @@ import { Guide } from './table/Guide';
 import { Order } from './table/Order';
 import { Tray } from './table/Tray';
 import { Wheel } from './table/Wheel';
-import { useGestureInput } from './table/useGestureInput';
 import { usePointerInput } from './table/usePointerInput';
+import { useGestureEngine } from '../gestures/useGestureEngine';
 import {
 	INACTIVITY_TIMEOUT_MS,
 	getFocusedDrink,
@@ -28,24 +28,16 @@ import {
 	type GedulgtTableStore,
 	type TableSide,
 } from '../store/gedulgtTableStore';
-import type { HandTrackingSnapshot } from '../hooks/useHandTracking';
 
 gsap.registerPlugin(useGSAP);
 
 type GedulgtTableMenuProps = {
 	gesturesEnabled: boolean;
-	trackingRef: {
-		current: HandTrackingSnapshot;
-	};
 };
 
-export function GedulgtTableMenu({
-	gesturesEnabled,
-	trackingRef,
-}: GedulgtTableMenuProps) {
+export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
 	const tableRef = useRef<HTMLElement | null>(null);
 	const phase = useGedulgtTableStore((state) => state.phase);
-	const activeSide = useGedulgtTableStore((state) => state.activeSide);
 	const focusedDrinkId = useGedulgtTableStore((state) => state.focusedDrinkId);
 	const wheelPosition = useGedulgtTableStore((state) => state.wheelPosition);
 	const cardFace = useGedulgtTableStore((state) => state.cardFace);
@@ -101,18 +93,7 @@ export function GedulgtTableMenu({
 		onRotate: rotateWheel,
 	});
 
-	useGestureInput({
-		enabled: gesturesEnabled,
-		tableRef,
-		trackingRef,
-		activeSide,
-		phase,
-		focusedDrinkId,
-		activate,
-		addFocusedToTray,
-		rotateWheel,
-		toggleCardFace,
-	});
+	const { videoRef } = useGestureEngine({ enabled: gesturesEnabled });
 
 	useAmbientMotion(tableRef);
 	usePhaseGlow(tableRef, phase);
@@ -176,10 +157,23 @@ export function GedulgtTableMenu({
 		<section
 			ref={tableRef}
 			className={cx('projection-table', `projection-table--${phase}`)}
-			style={{ '--drink-accent': focusedDrink.accent } as CSSProperties}
+			style={
+				{
+					'--drink-accent':
+						(focusedDrink as typeof focusedDrink & { accent?: string }).accent ??
+						'#78b99a',
+				} as CSSProperties
+			}
 			aria-label='Gedulgt Table Menu'
 			data-gestures={gesturesEnabled ? 'enabled' : 'disabled'}
 			{...pointer}>
+			<video
+				ref={videoRef}
+				style={{ display: "none" }}
+				aria-hidden="true"
+				tabIndex={-1}>
+				<track kind="captions" />
+			</video>
 			<Ambient />
 
 			{phase === 'dormant' ? (
