@@ -15,14 +15,14 @@ gsap.registerPlugin(useGSAP);
 
 type SelectedItems = ReturnType<typeof getSelectedDrinkItems>;
 
-// Deterministic scattered grid positions — close together, varied in x and y
+// Deterministic scattered grid positions — slightly spread out, varied in x and y
 const SCATTER = [
-	{ dx: 0, dy: -8 },
-	{ dx: 55, dy: 28 },
-	{ dx: -58, dy: 34 },
-	{ dx: 12, dy: -90 },
-	{ dx: -53, dy: -64 },
-	{ dx: 68, dy: -58 },
+	{ dx: 0, dy: -10 },
+	{ dx: 74, dy: 56 },
+	{ dx: -86, dy: 42 },
+	{ dx: 16, dy: -106 },
+	{ dx: -76, dy: -76 },
+	{ dx: 91, dy: -66 },
 ];
 
 function getTrayTokenPosition(index: number) {
