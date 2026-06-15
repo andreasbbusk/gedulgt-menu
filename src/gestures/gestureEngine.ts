@@ -23,6 +23,7 @@ export type EngineConfig = {
   swipeMinVelocityPxMs: number;
   swipeUpMinPx: number;
   swipeUpMaxOffAxisPx: number;
+  swipeUpMinVelocityPxMs: number;
   fistTapMaxMs: number; // fist must close and be detected within this window
   cooldownMs: number;
   returnGuardMs: number;
@@ -49,6 +50,7 @@ export function defaultConfig(screenW: number, screenH: number): EngineConfig {
     swipeMinVelocityPxMs: 0.25,
     swipeUpMinPx: screenH * 0.14,
     swipeUpMaxOffAxisPx: screenW * 0.09,
+    swipeUpMinVelocityPxMs: 0.25,
     fistTapMaxMs: 300,
     cooldownMs: 600,
     returnGuardMs: 1200,
@@ -133,6 +135,7 @@ export function updateEngine(
       return {
         state: {
           ...createEngineState(),
+          phase: "cooldown",
           cooldownUntil: input.time + config.cooldownMs,
         },
         event: { type: "DOUBLE_OPEN" },
@@ -193,7 +196,10 @@ export function updateEngine(
 
   if (input.pose === "open") {
     if (poseChanged || !clearedState.swipeOrigin) {
-      return { state: { ...next, swipeOrigin: input.point }, event: null };
+      return {
+        state: { ...next, poseStart: input.time, swipeOrigin: input.point },
+        event: null,
+      };
     }
 
     const origin = clearedState.swipeOrigin;
@@ -201,11 +207,13 @@ export function updateEngine(
     const dy = input.point.y - origin.y; // negative = upward in screen coords
     const elapsed = Math.max(poseAge, 1);
     const velocityPxMs = Math.abs(dx) / elapsed;
+    const verticalVelocityPxMs = Math.abs(dy) / elapsed;
 
     // Swipe up — checked first, stricter axis gate
     if (
       -dy >= config.swipeUpMinPx &&
-      Math.abs(dx) <= config.swipeUpMaxOffAxisPx
+      Math.abs(dx) <= config.swipeUpMaxOffAxisPx &&
+      verticalVelocityPxMs >= config.swipeUpMinVelocityPxMs
     ) {
       return fire({ type: "SWIPE_UP" });
     }

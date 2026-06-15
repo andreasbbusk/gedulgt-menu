@@ -16,7 +16,8 @@ export function classifyPose(lm: Pt[]): HandPose {
   const middleMcp = lm[9];
   if (!wrist || !middleMcp) return "unknown";
 
-  const palmSize = Math.max(dist(wrist, middleMcp), 0.001);
+  const palmSize = dist(wrist, middleMcp);
+  if (palmSize === 0) return "unknown";
   let curled = 0;
   let extended = 0;
 
