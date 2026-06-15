@@ -179,16 +179,9 @@ export function Tray({
 				})}
 			</div>
 
-			<button
-				type='button'
-				className='tray__confirm'
-				data-tray-confirm
-				disabled={!hasItems || phase === 'orderConfirmation'}
-				onClick={(event) => {
-					onConfirm(getSide(event.clientY, trayRef.current));
-				}}>
+			<div className='tray__confirm'>
 				{hasItems && <strong>{formatPrice(total)}</strong>}
-			</button>
+			</div>
 		</section>
 	);
 }

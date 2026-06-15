@@ -12,7 +12,6 @@ import gsap from 'gsap';
 import { FEEDBACK_SETTLE_MS, cx } from './table/utils';
 import { Dormant } from './table/Dormant';
 import { Guide } from './table/Guide';
-import { Order } from './table/Order';
 import { Tray } from './table/Tray';
 import { Wheel } from './table/Wheel';
 import { usePointerInput } from './table/usePointerInput';
@@ -20,7 +19,6 @@ import { useGestureEngine } from '../gestures/useGestureEngine';
 import {
 	INACTIVITY_TIMEOUT_MS,
 	getFocusedDrink,
-	getOrderTotal,
 	getSelectedDrinkItems,
 	getTotalSelectedCount,
 	getWheelSlots,
@@ -81,10 +79,6 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
 	);
 	const selectedCount = useMemo(
 		() => getTotalSelectedCount(selectedItems),
-		[selectedItems],
-	);
-	const orderTotal = useMemo(
-		() => getOrderTotal(selectedItems),
 		[selectedItems],
 	);
 
@@ -195,13 +189,6 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
 						onConfirm={(side) => confirmOrder(side)}
 					/>
 					{phase === 'onboarding' && <Guide step={onboardingStep} />}
-					{phase === 'orderConfirmation' && (
-						<Order
-							items={selectedDrinks}
-							total={orderTotal}
-							onReset={() => resetExperience()}
-						/>
-					)}
 				</>
 			)}
 		</section>
