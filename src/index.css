@@ -302,13 +302,13 @@ p {
 }
 
 .table-drink-card__creator {
-	font-size: 8px;
+	font-size: 10px;
 	font-style: italic;
 	font-weight: 400;
 }
 
 .table-drink-card__description {
-	font-size: 13.1px;
+	font-size: 22px;
 	font-style: italic;
 	font-weight: 400;
 }
@@ -360,10 +360,7 @@ p {
 }
 
 .table-drink-card--ghost .drink-card__image {
-	/* justify-self: flex-end; */
-	/* width: 78%; */
 	height: auto;
-	/* filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.35)); */
 }
 
 .tray {
@@ -420,10 +417,8 @@ p {
 	display: grid;
 	place-items: center;
 	border: none;
-	/* border-radius: 50%; */
 	color: var(--projected);
 	background: transparent;
-	/* box-shadow: 0 0 28px color-mix(in srgb, var(--drink-accent) 18%, transparent); */
 	cursor: pointer;
 	pointer-events: auto;
 	transform: translate(
@@ -441,43 +436,10 @@ p {
 	padding: 0 5px;
 	display: grid;
 	place-items: center;
-	/* border: 1px solid rgba(244, 238, 226, 0.22); */
-	/* border-radius: 50%; */
-	/* background: #090c09; */
 	font-size: 0.66rem;
 	font-weight: 800;
 	line-height: 1;
-	/* transform: translate(
-		calc(-50% + var(--badge-x)),
-		calc(-50% + var(--badge-y))
-	); */
 }
-
-.tray__confirm {
-  position: absolute;
-  left: 50%;
-  bottom: 25px;
-  z-index: 4;
-  min-width: 148px;
-  min-height: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid rgba(244, 238, 226, 0.16);
-  border-radius: 8px;
-  color: var(--projected);
-  background: rgba(8, 10, 9, 0.76);
-  cursor: default;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(-50%);
-}
-
-.tray--populated .tray__confirm {
-  opacity: 1;
-}
-
 .tray__confirm span,
 .tray__confirm strong {
 	font-size: clamp(0.64rem, 1.05vmin, 0.76rem);
@@ -538,29 +500,4 @@ p {
 	height: auto;
 	max-height: 50%;
 	max-width: 120px;
-}
-@media (max-width: 760px) {
-  .projection-table {
-    width: min(calc(100vw - 14px), calc(100svh - 14px));
-  }
-
-  .mirrored-wheel__slot {
-    width: clamp(94px, 21vmin, 144px);
-    height: clamp(132px, 30vmin, 202px);
-  }
-
-  .tray {
-    width: 204px;
-    height: 204px;
-  }
-
-  .tray-token {
-    width: 56px;
-    height: 56px;
-  }
-
-  .onboarding-guide {
-    right: 6%;
-    width: 128px;
-  }
 }
