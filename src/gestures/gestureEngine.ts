@@ -28,7 +28,7 @@ export type EngineConfig = {
   swipeDownMinPx: number;
   swipeDownMaxOffAxisPx: number;
   swipeDownMinVelocityPxMs: number;
-  fistTapMaxMs: number; // fist must close and be detected within this window
+  fistTapMaxMs: number;
   cooldownMs: number;
   returnGuardMs: number;
   doubleOpenDwellMs: number;
@@ -45,6 +45,8 @@ export type EngineState = {
   returnGuardUntil: number;
   doubleOpenSince: number;
   doubleOpenAnchor: [Pt | null, Pt | null];
+  requireVerticalPoseBreak: boolean;
+  fistTapArmed: boolean;
 };
 
 export function defaultConfig(screenW: number, screenH: number): EngineConfig {
@@ -77,6 +79,8 @@ export function createEngineState(): EngineState {
     returnGuardUntil: 0,
     doubleOpenSince: 0,
     doubleOpenAnchor: [null, null],
+    requireVerticalPoseBreak: false,
+    fistTapArmed: true,
   };
 }
 
@@ -86,11 +90,28 @@ export function updateEngine(
   config: EngineConfig,
 ): { state: EngineState; event: GestureEvent | null } {
   if (!input.hasHand) {
-    return { state: createEngineState(), event: null };
+    return {
+      state: { ...createEngineState(), fistTapArmed: state.fistTapArmed },
+      event: null,
+    };
   }
 
   if (input.time < state.cooldownUntil) {
-    return { state: { ...state, phase: "cooldown" }, event: null };
+    const poseChanged = input.pose !== state.pose;
+    const fistTapArmed = input.pose === "open" ? true : state.fistTapArmed;
+
+    return {
+      state: {
+        ...state,
+        phase: "cooldown",
+        pose: input.pose,
+        poseStart: poseChanged ? input.time : state.poseStart,
+        requireVerticalPoseBreak:
+          state.requireVerticalPoseBreak && input.pose === "open",
+        fistTapArmed,
+      },
+      event: null,
+    };
   }
 
   const bothOpen =
@@ -123,6 +144,7 @@ export function updateEngine(
       return {
         state: {
           ...state,
+          fistTapArmed: true,
           doubleOpenSince: input.time,
           doubleOpenAnchor: [
             input.hands[0]?.point ?? null,
@@ -154,6 +176,7 @@ export function updateEngine(
     return {
       state: {
         ...state,
+        fistTapArmed: true,
         doubleOpenSince,
         doubleOpenAnchor: [anchor0, anchor1],
       },
@@ -165,11 +188,14 @@ export function updateEngine(
     ...state,
     doubleOpenSince: 0,
     doubleOpenAnchor: [null, null],
+    requireVerticalPoseBreak:
+      state.requireVerticalPoseBreak && input.pose === "open",
+    fistTapArmed: input.pose === "open" ? true : state.fistTapArmed,
   };
 
-  const fire = (event: GestureEvent) => ({
+  const fire = (event: GestureEvent, eventState = clearedState) => ({
     state: {
-      ...clearedState,
+      ...eventState,
       phase: "cooldown" as const,
       cooldownUntil: input.time + config.cooldownMs,
       swipeOrigin: null,
@@ -180,7 +206,10 @@ export function updateEngine(
       returnGuardUntil:
         event.type === "SWIPE"
           ? input.time + config.returnGuardMs
-          : clearedState.returnGuardUntil,
+          : eventState.returnGuardUntil,
+      requireVerticalPoseBreak:
+        event.type === "SWIPE_UP" ? true : eventState.requireVerticalPoseBreak,
+      fistTapArmed: event.type === "FIST_TAP" ? false : eventState.fistTapArmed,
     },
     event,
   });
@@ -197,9 +226,8 @@ export function updateEngine(
   };
 
   if (input.pose === "fist") {
-    // Fire immediately on first frame the fist is detected, within the tap window
-    if (poseChanged && poseAge <= config.fistTapMaxMs) {
-      return fire({ type: "FIST_TAP" });
+    if (clearedState.fistTapArmed) {
+      return fire({ type: "FIST_TAP" }, next);
     }
 
     return { state: { ...next, swipeOrigin: null }, event: null };
@@ -233,7 +261,8 @@ export function updateEngine(
     if (
       dy >= config.swipeDownMinPx &&
       Math.abs(dx) <= config.swipeDownMaxOffAxisPx &&
-      velocityYPxMs >= config.swipeDownMinVelocityPxMs
+      velocityYPxMs >= config.swipeDownMinVelocityPxMs &&
+      !clearedState.requireVerticalPoseBreak
     ) {
       return fire({ type: "SWIPE_DOWN" });
     }

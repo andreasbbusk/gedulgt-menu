@@ -35,6 +35,8 @@ const initialState = {
   returnGuardUntil: 0,
   doubleOpenSince: 0,
   doubleOpenAnchor: [null, null],
+  requireVerticalPoseBreak: false,
+  fistTapArmed: true,
 } satisfies EngineState;
 
 function frame(
@@ -88,7 +90,7 @@ describe("defaultConfig", () => {
       swipeMinVelocityPxMs: 0.25,
       swipeUpMinPx: 112.00000000000001,
       swipeUpMaxOffAxisPx: 90,
-      swipeUpMinVelocityPxMs: 0.25,
+      swipeUpMinVelocityPxMs: 0.05,
       swipeDownMinPx: 112.00000000000001,
       swipeDownMaxOffAxisPx: 90,
       swipeDownMinVelocityPxMs: 0.6,
@@ -118,11 +120,30 @@ describe("updateEngine - no hand", () => {
           { x: 100, y: 100 },
           { x: 300, y: 100 },
         ],
+        requireVerticalPoseBreak: true,
       },
       frame("open", { x: 230, y: 100 }, 400, false),
     );
 
     expect(result).toEqual({ state: createEngineState(), event: null });
+  });
+
+  it("does not re-arm fist tap when hand leaves frame", () => {
+    const result = step(
+      {
+        ...createEngineState(),
+        phase: "cooldown",
+        cooldownUntil: 900,
+        pose: "fist",
+        fistTapArmed: false,
+      },
+      frame("fist", { x: 100, y: 100 }, 400, false),
+    );
+
+    expect(result).toEqual({
+      state: { ...createEngineState(), fistTapArmed: false },
+      event: null,
+    });
   });
 });
 
@@ -161,7 +182,7 @@ describe("updateEngine - cooldown", () => {
 });
 
 describe("updateEngine - FIST_TAP", () => {
-  it("fires FIST_TAP on first frame fist is detected", () => {
+  it("fires FIST_TAP on first frame fist is detected while armed", () => {
     const result = step(
       createEngineState(),
       frame("fist", { x: 100, y: 100 }, 100),
@@ -169,9 +190,13 @@ describe("updateEngine - FIST_TAP", () => {
 
     expect(result.event).toEqual({ type: "FIST_TAP" });
     expect(result.state.phase).toBe("cooldown");
+    expect(result.state.pose).toBe("fist");
+    expect(result.state.poseStart).toBe(100);
+    expect(result.state.fistTapArmed).toBe(false);
+    expect(result.state.swipeOrigin).toBeNull();
   });
 
-  it("does not fire if poseChanged is false", () => {
+  it("does not fire if fist tap is disarmed", () => {
     const result = step(
       {
         ...createEngineState(),
@@ -179,12 +204,94 @@ describe("updateEngine - FIST_TAP", () => {
         pose: "fist",
         poseStart: 100,
         swipeOrigin: { x: 100, y: 100 },
+        fistTapArmed: false,
       },
       frame("fist", { x: 110, y: 100 }, 150),
     );
 
     expect(result.event).toBeNull();
     expect(result.state.swipeOrigin).toBeNull();
+    expect(result.state.fistTapArmed).toBe(false);
+  });
+
+  it("does not fire repeatedly while fist remains closed across cooldown", () => {
+    let result = step(
+      createEngineState(),
+      frame("fist", { x: 100, y: 100 }, 100),
+    );
+    expect(result.event).toEqual({ type: "FIST_TAP" });
+    expect(result.state.fistTapArmed).toBe(false);
+
+    result = step(result.state, frame("fist", { x: 100, y: 100 }, 700));
+    expect(result.event).toBeNull();
+    expect(result.state.phase).toBe("tracking");
+    expect(result.state.fistTapArmed).toBe(false);
+
+    result = step(result.state, frame("fist", { x: 100, y: 100 }, 900));
+    expect(result.event).toBeNull();
+    expect(result.state.fistTapArmed).toBe(false);
+  });
+
+  it("re-arms on open hand and fires again on the next fist close", () => {
+    let result = step(
+      createEngineState(),
+      frame("fist", { x: 100, y: 100 }, 100),
+    );
+    expect(result.event).toEqual({ type: "FIST_TAP" });
+
+    result = step(result.state, frame("open", { x: 100, y: 100 }, 700));
+    expect(result.event).toBeNull();
+    expect(result.state.fistTapArmed).toBe(true);
+
+    result = step(result.state, frame("fist", { x: 100, y: 100 }, 800));
+    expect(result.event).toEqual({ type: "FIST_TAP" });
+    expect(result.state.fistTapArmed).toBe(false);
+  });
+
+  it("does not re-arm on unknown pose", () => {
+    let result = step(
+      createEngineState(),
+      frame("fist", { x: 100, y: 100 }, 100),
+    );
+    expect(result.event).toEqual({ type: "FIST_TAP" });
+
+    result = step(result.state, frame("unknown", { x: 100, y: 100 }, 700));
+    expect(result.event).toBeNull();
+    expect(result.state.fistTapArmed).toBe(false);
+
+    result = step(result.state, frame("fist", { x: 100, y: 100 }, 800));
+
+    expect(result.event).toBeNull();
+    expect(result.state.phase).toBe("tracking");
+    expect(result.state.fistTapArmed).toBe(false);
+  });
+
+  it("re-arms on open hand during cooldown", () => {
+    let result = step(
+      createEngineState(),
+      frame("fist", { x: 100, y: 100 }, 100),
+    );
+    expect(result.event).toEqual({ type: "FIST_TAP" });
+
+    result = step(result.state, frame("open", { x: 100, y: 100 }, 300));
+
+    expect(result.event).toBeNull();
+    expect(result.state.phase).toBe("cooldown");
+    expect(result.state.pose).toBe("open");
+    expect(result.state.fistTapArmed).toBe(true);
+  });
+
+  it("does not re-arm when the hand leaves frame after a fist tap", () => {
+    let result = step(
+      createEngineState(),
+      frame("fist", { x: 100, y: 100 }, 100),
+    );
+    expect(result.event).toEqual({ type: "FIST_TAP" });
+
+    result = step(result.state, frame("fist", { x: 100, y: 100 }, 250, false));
+
+    expect(result.event).toBeNull();
+    expect(result.state.fistTapArmed).toBe(false);
   });
 
   it("enters cooldown after firing", () => {
@@ -318,6 +425,31 @@ describe("updateEngine - SWIPE_UP", () => {
     expect(result.event).toEqual({ type: "SWIPE_UP" });
   });
 
+  it("requires a pose break before a following SWIPE_DOWN can arm", () => {
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 300 }, 100),
+    );
+    result = step(result.state, frame("open", { x: 112, y: 205 }, 300));
+
+    expect(result.event).toEqual({ type: "SWIPE_UP" });
+    expect(result.state.requireVerticalPoseBreak).toBe(true);
+  });
+
+  it("allows another SWIPE_UP while the vertical pose break is required", () => {
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 400 }, 100),
+    );
+    result = step(result.state, frame("open", { x: 112, y: 305 }, 300));
+    expect(result.event).toEqual({ type: "SWIPE_UP" });
+
+    result = step(result.state, frame("open", { x: 112, y: 305 }, 900));
+    result = step(result.state, frame("open", { x: 112, y: 210 }, 1_000));
+
+    expect(result.event).toEqual({ type: "SWIPE_UP" });
+  });
+
   it("does not fire when dx exceeds swipeUpMaxOffAxisPx", () => {
     let result = step(
       createEngineState(),
@@ -406,6 +538,53 @@ describe("updateEngine - SWIPE_DOWN", () => {
     );
 
     expect(result.event).toEqual({ type: "SWIPE_DOWN" });
+  });
+
+  it("blocks SWIPE_DOWN after SWIPE_UP while the hand stays open", () => {
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 300 }, 100),
+    );
+    result = step(result.state, frame("open", { x: 112, y: 205 }, 300));
+    expect(result.event).toEqual({ type: "SWIPE_UP" });
+
+    result = step(result.state, frame("open", { x: 112, y: 205 }, 900));
+    result = step(result.state, frame("open", { x: 112, y: 335 }, 1_000));
+
+    expect(result.event).toBeNull();
+    expect(result.state.requireVerticalPoseBreak).toBe(true);
+  });
+
+  it("fires SWIPE_DOWN after SWIPE_UP once the pose leaves and re-enters open", () => {
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 300 }, 100),
+    );
+    result = step(result.state, frame("open", { x: 112, y: 205 }, 300));
+    expect(result.event).toEqual({ type: "SWIPE_UP" });
+
+    result = step(result.state, frame("unknown", { x: 112, y: 205 }, 900));
+    expect(result.state.requireVerticalPoseBreak).toBe(false);
+
+    result = step(result.state, frame("open", { x: 112, y: 205 }, 1_000));
+    result = step(result.state, frame("open", { x: 112, y: 335 }, 1_100));
+
+    expect(result.event).toEqual({ type: "SWIPE_DOWN" });
+  });
+
+  it("does not block horizontal swipes while the vertical pose break is required", () => {
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 300 }, 100),
+    );
+    result = step(result.state, frame("open", { x: 112, y: 205 }, 300));
+    expect(result.event).toEqual({ type: "SWIPE_UP" });
+
+    result = step(result.state, frame("open", { x: 112, y: 205 }, 900));
+    result = step(result.state, frame("open", { x: 242, y: 205 }, 1_000));
+
+    expect(result.event).toEqual({ type: "SWIPE", direction: "right" });
+    expect(result.state.requireVerticalPoseBreak).toBe(true);
   });
 });
 
@@ -549,5 +728,20 @@ describe("updateEngine - state threading", () => {
     result = step(result.state, frame("open", { x: 100, y: 100 }, 200));
 
     expect(result.state.doubleOpenAnchor).toEqual([null, null]);
+  });
+
+  it("requireVerticalPoseBreak clears when the pose leaves open during cooldown", () => {
+    const result = step(
+      {
+        ...createEngineState(),
+        phase: "cooldown",
+        cooldownUntil: 900,
+        requireVerticalPoseBreak: true,
+      },
+      frame("unknown", { x: 100, y: 100 }, 500),
+    );
+
+    expect(result.event).toBeNull();
+    expect(result.state.requireVerticalPoseBreak).toBe(false);
   });
 });
