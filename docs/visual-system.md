@@ -49,7 +49,7 @@ The table should prioritize:
 3. Contextual hand/help cue when needed.
 4. Ghosted surrounding drink cards.
 5. Ambient smoke/light/noise.
-6. Dormant brand mark or confirmation summary, depending on phase.
+6. Dormant brand mark.
 
 Only one concept should feel dominant at a time.
 
@@ -113,23 +113,7 @@ Tray visual behavior:
 - repeated adds increment quantity in place
 - clicking a token decrements/removes it
 - trying to add a seventh drink triggers a restrained refusal pulse
-
-The Tray can expose a subtle confirmation action once it has at least one selected item.
-
-## Order Confirmation
-
-The order confirmation blooms from the Tray. It should be the clearest, most practical visual state because it is meant to be shown to a waiter.
-
-Content:
-
-- `Your order`
-- drink names
-- quantities
-- individual prices
-- `Total ...,-`
-- reset action
-
-The confirmation may become more list-like than the Tray, because readability is the priority in this phase.
+- the total price appears as a compact passive display
 
 ## Motion
 
@@ -178,8 +162,6 @@ Activation copy:
 
 Confirmation copy:
 
-- `Order drinks`
-- `Your order`
 - `Total`
 
 ## Brand Presence
@@ -187,7 +169,6 @@ Confirmation copy:
 Gedulgt branding appears in:
 
 - dormant state
-- order confirmation
 
 Branding should not be permanently visible during browsing unless later design work proves it improves the table. The atmosphere, light, and drink reveal should carry the brand during the main interaction.
 

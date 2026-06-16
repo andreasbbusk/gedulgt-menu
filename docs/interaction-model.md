@@ -16,9 +16,6 @@ stateDiagram-v2
   browseWheel --> trayFeedback: ADD_FOCUSED_TO_TRAY
   cardBack --> trayFeedback: ADD_FOCUSED_TO_TRAY
   trayFeedback --> browseWheel: success settles
-  browseWheel --> orderConfirmation: CONFIRM_ORDER
-  cardBack --> orderConfirmation: CONFIRM_ORDER
-  orderConfirmation --> dormant: RESET_EXPERIENCE
   browseWheel --> dormant: DEACTIVATE or INACTIVITY_TIMEOUT
   cardBack --> dormant: DEACTIVATE or INACTIVITY_TIMEOUT
   trayFeedback --> dormant: DEACTIVATE or INACTIVITY_TIMEOUT
@@ -28,13 +25,12 @@ Implementation may represent `cardBack` as `phase: "browseWheel"` plus `cardFace
 
 ## Phases
 
-| Phase               | Purpose                                                 | Entry                                                                       | Exit                                                            |
-| ------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `dormant`           | Hide the menu in a quiet branded light state.           | Initial load, reset, inactivity timeout, deactivate.                        | Activation through hand/mouse edge well or first hand in light. |
-| `onboarding`        | Teach and prove the required interactions.              | Activation when onboarding is incomplete.                                   | Complete swipe, tap, and drag-to-Tray steps.                    |
-| `browseWheel`       | Main menu exploration.                                  | Onboarding completion or activation after onboarding was already completed. | Flip, add, order confirmation, deactivate, timeout.             |
-| `trayFeedback`      | Short success or refusal feedback after an add attempt. | Add focused drink to Tray or attempt to exceed max order.                   | Automatically settles back to browse.                           |
-| `orderConfirmation` | Waiter-facing readable summary.                         | Confirm from Tray when at least one drink is selected.                      | Manual reset to dormant.                                        |
+| Phase          | Purpose                                                 | Entry                                                                       | Exit                                                            |
+| -------------- | ------------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `dormant`      | Hide the menu in a quiet branded light state.           | Initial load, reset, inactivity timeout, deactivate.                        | Activation through hand/mouse edge well or first hand in light. |
+| `onboarding`   | Teach and prove the required interactions.              | Activation when onboarding is incomplete.                                   | Complete swipe, tap, and drag-to-Tray steps.                    |
+| `browseWheel`  | Main menu exploration.                                  | Onboarding completion or activation after onboarding was already completed. | Flip, add, decrement, deactivate, timeout.                      |
+| `trayFeedback` | Short success or refusal feedback after an add attempt. | Add focused drink to Tray or attempt to exceed max order.                   | Automatically settles back to browse.                           |
 
 ## Semantic Actions
 
@@ -47,8 +43,6 @@ Implementation may represent `cardBack` as `phase: "browseWheel"` plus `cardFace
 | `TOGGLE_CARD_FACE`         | Flip focused drink front/back.           | Click focused card.                                                    | Future flip/reveal gesture.                        |
 | `ADD_FOCUSED_TO_TRAY`      | Add focused drink quantity to Tray.      | Drag/swipe focused card inward.                                        | Inward hand movement toward Tray.                  |
 | `DECREMENT_TRAY_ITEM`      | Reduce quantity/remove selected token.   | Click/tap Tray token.                                                  | Future token remove gesture.                       |
-| `CONFIRM_ORDER`            | Open waiter-readable order summary.      | Click/tap Tray confirmation action.                                    | Future confirm gesture.                            |
-| `RESET_EXPERIENCE`         | Clear live state and return dormant.     | Reset action in confirmation.                                          | Future reset/deactivate gesture.                   |
 
 Exact gesture recognition thresholds are intentionally not defined yet.
 
@@ -104,7 +98,6 @@ Shared state:
 - one focused drink
 - one card face
 - one Tray
-- one order confirmation
 - one input lockout timer
 
 Focused drink behavior:
@@ -158,31 +151,6 @@ Add feedback:
 - selected token appears or quantity increments
 - no automatic rotation after add
 
-## Order Confirmation
-
-The Tray can bloom into a readable order confirmation when at least one drink is selected.
-
-Default Tray confirmation action copy:
-
-- `Order drinks`
-
-Confirmation content:
-
-- title: `Your order`
-- selected drink names
-- quantities
-- individual prices
-- total price
-- compact DKK format, e.g. `110,-` and `Total 690,-`
-- reset/close action
-
-Confirmation behavior:
-
-- It is visual only.
-- It is meant to be shown to a waiter.
-- It does not submit to a backend.
-- Manual reset clears live order state and returns to dormant.
-
 ## Two-Guest Interaction Rule
 
 Both near and far sides can interact after onboarding. The app should infer side from table half:
@@ -192,7 +160,7 @@ Both near and far sides can interact after onboarding. The app should infer side
 
 After a valid action, the side that triggered it owns a `700ms` input lockout. During this window, actions from the opposite side are ignored. This prevents the shared state from thrashing if both guests move at once.
 
-The lockout should not make the app feel unresponsive. It only protects state-changing actions such as rotate, flip, add, decrement, confirm, and deactivate.
+The lockout should not make the app feel unresponsive. It only protects state-changing actions such as rotate, flip, add, decrement, and deactivate.
 
 ## Inactivity Timeout
 

@@ -1,18 +1,15 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import {
-  getCanonicalDrinks,
-  type TableSide,
-  type WheelSlot,
-} from "../../store/gedulgtTableStore";
+import { GEDULGT_DRINKS } from "../../data/gedulgtDrinks";
+import type { TableSide, WheelSlot } from "../../store/gedulgtTableStore";
 import { Card } from "./Card";
-
-gsap.registerPlugin(useGSAP);
 
 const FOCUSED_NEAR_ANGLE = 90;
 const MIRRORED_COPY_ANGLE = 180;
 const ORBIT_ANGLE_STEP = 30;
+const FILTER_FOCUSED = "blur(0px) saturate(1) brightness(1)";
+const FILTER_UNFOCUSED = "blur(12px) saturate(0.82) brightness(0.88)";
 
 type WheelProps = {
   slots: WheelSlot[];
@@ -29,7 +26,6 @@ export const Wheel = memo(function Wheel({
 }: WheelProps) {
   const wheelRef = useRef<HTMLDivElement | null>(null);
   const [layoutVersion, setLayoutVersion] = useState(0);
-  const drinks = getCanonicalDrinks();
 
   useEffect(() => {
     const handleResize = () => {
@@ -77,9 +73,6 @@ export const Wheel = memo(function Wheel({
         const radialRotation = angle - 90;
         const scale = focused ? 1 : 0.84;
         const alpha = focused ? 1 : 0.72;
-        const blur = focused ? 0 : 12;
-        const saturation = focused ? 1 : 0.82;
-        const brightness = focused ? 1 : 0.88;
 
         tl.to(
           card,
@@ -91,7 +84,7 @@ export const Wheel = memo(function Wheel({
             scale,
             rotation: radialRotation,
             autoAlpha: alpha,
-            filter: `blur(${blur}px) saturate(${saturation}) brightness(${brightness})`,
+            filter: focused ? FILTER_FOCUSED : FILTER_UNFOCUSED,
             zIndex: focused ? 12 : depth === 1 ? 10 : 8 - depth,
             pointerEvents: depth <= 1 ? "auto" : "none",
             transformOrigin: "50% 50%",
@@ -107,7 +100,7 @@ export const Wheel = memo(function Wheel({
   return (
     <div ref={wheelRef} className="mirrored-wheel" aria-label="Mirrored drinks">
       {slots.map((slot) => {
-        const drink = drinks[slot.canonicalIndex];
+        const drink = GEDULGT_DRINKS[slot.canonicalIndex];
         const orbitAngle = getOrbitAngle(
           slot.canonicalIndex,
           slot.side === "far" ? 1 : 0,

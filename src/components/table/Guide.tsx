@@ -4,8 +4,6 @@ import gsap from "gsap";
 import type { OnboardingStep } from "../../store/gedulgtTableStore";
 import { getGuideCopy } from "./utils";
 
-gsap.registerPlugin(useGSAP);
-
 export function Guide({ step }: { step: OnboardingStep }) {
   const guideRef = useRef<HTMLElement | null>(null);
 

@@ -14,7 +14,7 @@ Tasks:
 
 - Add Zustand.
 - Create the Gedulgt Table Menu store.
-- Define phases: `dormant`, `onboarding`, `browseWheel`, `trayFeedback`, `orderConfirmation`.
+- Define phases: `dormant`, `onboarding`, `browseWheel`, `trayFeedback`.
 - Add persisted `onboardingCompleted` using local browser memory.
 - Add non-persisted live session state: focused drink, card face, selected items, active side, lockout, feedback, last interaction time.
 - Add constants for max drinks, timeout, edge hold, and side lockout.
@@ -37,7 +37,7 @@ Tasks:
 
 - Create the main `GedulgtTableMenu` shell.
 - Add `ProjectionTable` with circular active field.
-- Add phase routing for dormant, onboarding, browse, Tray feedback, and confirmation.
+- Add phase routing for dormant, onboarding, browse, and Tray feedback.
 - Add near/far edge wells.
 - Add inactivity timer dispatching `INACTIVITY_TIMEOUT` after `60s`.
 - Keep tracking preview hidden behind existing or equivalent query/debug controls.
@@ -84,7 +84,6 @@ Tasks:
 - Click focused card flips it.
 - Drag/swipe focused card inward adds it to the Tray.
 - Click Tray token decrements/removes quantity.
-- Click Tray confirmation action opens order confirmation.
 - Detect near/far side by table half.
 - Add `700ms` opposite-side input lockout.
 
@@ -95,9 +94,9 @@ Acceptance criteria:
 - Opposite-side lockout prevents conflicting rapid interactions.
 - There are no ordinary visible debug controls in guest mode.
 
-## Phase 5: Tray And Confirmation
+## Phase 5: Tray
 
-Goal: complete ordering behavior visually.
+Goal: complete selected-drink Tray behavior visually.
 
 Tasks:
 
@@ -105,16 +104,11 @@ Tasks:
 - Show selected glyph tokens with quantity.
 - Add success pulse on add.
 - Add restrained Tray-full pulse when exceeding six total drinks.
-- Add confirmation affordance once at least one drink is selected.
-- Implement `OrderConfirmation` blooming from Tray.
-- Show `Your order`, names, quantities, individual prices, and total.
-- Add manual reset returning to dormant.
+- Show compact total price when at least one drink is selected.
 
 Acceptance criteria:
 
 - Tray shows quantities clearly without becoming a normal list.
-- Confirmation is readable enough to show a waiter.
-- Reset from confirmation clears live state and returns dormant.
 - Total price uses compact DKK format.
 
 ## Phase 6: Onboarding And Help Cues
@@ -144,7 +138,7 @@ Goal: raise the prototype from functional to Gedulgt-like.
 Tasks:
 
 - Add dark projected table atmosphere.
-- Add subtle Gedulgt mark in dormant and confirmation.
+- Add subtle Gedulgt mark in dormant.
 - Add light pool, prismatic accents, smoke/noise layers.
 - Tune card glyphs per drink accent.
 - Add physical card flip shimmer.
@@ -187,10 +181,9 @@ Before calling the refactor complete:
 - Run `npm run build`.
 - Test first-run onboarding.
 - Test persisted onboarding skip after reload.
-- Test mouse-only flow from dormant to confirmation.
+- Test mouse-only flow from dormant through browse, add, and decrement.
 - Test repeated quantity add and decrement.
 - Test max-six Tray full pulse.
-- Test reset from confirmation.
 - Test 60-second timeout.
 - Test near/far side lockout.
 - Test normal mode has no visible debug preview.
