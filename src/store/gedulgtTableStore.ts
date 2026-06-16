@@ -17,6 +17,8 @@ export type ExperiencePhase =
   | "onboardingAddConfirmation"
   | "onboardingRemove"
   | "onboardingRemoveConfirmation"
+  | "onboardingFlip"
+  | "onboardingFlipConfirmation"
   | "onboarding"
   | "browseWheel"
   | "trayFeedback";
@@ -63,6 +65,8 @@ export type GedulgtTableState = {
   onboardingNavigatePosition: number;
   onboardingNavigatePreviousCompleted: boolean;
   onboardingNavigateNextCompleted: boolean;
+  onboardingFlipSeenBack: boolean;
+  onboardingFlipFace: CardFace;
   inputLockout: InputLockout | null;
   trayFeedback: TrayFeedback;
   lastInteractionAt: number;
@@ -81,6 +85,8 @@ type GedulgtTableActions = {
   completeOnboardingAdd: (time?: number) => void;
   removeOnboardingCocktail: (side: TableSide, time?: number) => void;
   completeOnboardingRemove: (time?: number) => void;
+  flipOnboardingCocktail: (side: TableSide, time?: number) => void;
+  completeOnboardingFlip: (time?: number) => void;
   deactivate: (side: TableSide, time?: number) => void;
   rotateWheel: (
     direction: RotateDirection,
@@ -112,6 +118,8 @@ function getDormantState(
     onboardingNavigatePosition: 0,
     onboardingNavigatePreviousCompleted: false,
     onboardingNavigateNextCompleted: false,
+    onboardingFlipSeenBack: false,
+    onboardingFlipFace: "front",
     inputLockout: null,
     trayFeedback: null,
     lastInteractionAt: time,
@@ -313,7 +321,49 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
           }
 
           return {
+            phase: "onboardingFlip",
+            inputLockout: null,
+            lastInteractionAt: time,
+          };
+        });
+      },
+
+      flipOnboardingCocktail: (side, time = Date.now()) => {
+        set((state) => {
+          if (
+            state.phase !== "onboardingFlip" ||
+            !canUseSide(state, side, time)
+          ) {
+            return state;
+          }
+
+          const nextFace =
+            state.onboardingFlipFace === "front" ? "back" : "front";
+          const seenBack = state.onboardingFlipSeenBack || nextFace === "back";
+
+          return {
+            onboardingFlipFace: nextFace,
+            onboardingFlipSeenBack: seenBack,
+            phase:
+              seenBack && nextFace === "front"
+                ? "onboardingFlipConfirmation"
+                : "onboardingFlip",
+            inputLockout: { side, until: time + 700 },
+            lastInteractionAt: time,
+          };
+        });
+      },
+
+      completeOnboardingFlip: (time = Date.now()) => {
+        set((state) => {
+          if (state.phase !== "onboardingFlipConfirmation") {
+            return state;
+          }
+
+          return {
             phase: state.onboardingCompleted ? "browseWheel" : "onboarding",
+            onboardingFlipSeenBack: false,
+            onboardingFlipFace: "front",
             inputLockout: null,
             lastInteractionAt: time,
           };

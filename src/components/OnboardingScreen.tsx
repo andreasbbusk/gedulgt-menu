@@ -4,6 +4,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useGestureEngine } from "../gestures/useGestureEngine";
 import { useGedulgtTableStore } from "../store/gedulgtTableStore";
 import { OnboardingAddLayer } from "./OnboardingAddLayer";
+import { OnboardingFlipLayer } from "./OnboardingFlipLayer";
 import { OnboardingNavigateLayer } from "./OnboardingNavigateLayer";
 import { OnboardingRemoveLayer } from "./OnboardingRemoveLayer";
 import { OnboardingIntro } from "./table/OnboardingIntro";
@@ -20,6 +21,7 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
   const {
     phase,
     onboardingNavigatePosition,
+    onboardingFlipFace,
     activate,
     completeActivation,
     navigateOnboarding,
@@ -28,10 +30,13 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
     completeOnboardingAdd,
     removeOnboardingCocktail,
     completeOnboardingRemove,
+    flipOnboardingCocktail,
+    completeOnboardingFlip,
   } = useGedulgtTableStore(
     useShallow((state) => ({
       phase: state.phase,
       onboardingNavigatePosition: state.onboardingNavigatePosition,
+      onboardingFlipFace: state.onboardingFlipFace,
       activate: state.activate,
       completeActivation: state.completeActivation,
       navigateOnboarding: state.navigateOnboarding,
@@ -40,6 +45,8 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
       completeOnboardingAdd: state.completeOnboardingAdd,
       removeOnboardingCocktail: state.removeOnboardingCocktail,
       completeOnboardingRemove: state.completeOnboardingRemove,
+      flipOnboardingCocktail: state.flipOnboardingCocktail,
+      completeOnboardingFlip: state.completeOnboardingFlip,
     })),
   );
   const removePointerStartRef = useRef<{
@@ -108,6 +115,20 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
       window.clearTimeout(timer);
     };
   }, [completeOnboardingRemove, phase]);
+
+  useEffect(() => {
+    if (phase !== "onboardingFlipConfirmation") {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      completeOnboardingFlip(Date.now());
+    }, 950);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [completeOnboardingFlip, phase]);
 
   const handleForward = useCallback(() => {
     if (phase === "onboardingIntro") {
@@ -239,6 +260,13 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
         phase === "onboardingRemoveConfirmation" ? (
         <OnboardingRemoveLayer
           confirmed={phase === "onboardingRemoveConfirmation"}
+        />
+      ) : phase === "onboardingFlip" ||
+        phase === "onboardingFlipConfirmation" ? (
+        <OnboardingFlipLayer
+          face={onboardingFlipFace}
+          confirmed={phase === "onboardingFlipConfirmation"}
+          onFlip={flipOnboardingCocktail}
         />
       ) : (
         <OnboardingIntro confirmed={phase === "onboardingIntroConfirmation"} />

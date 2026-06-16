@@ -58,7 +58,9 @@ function App() {
     phase === "onboardingAdd" ||
     phase === "onboardingAddConfirmation" ||
     phase === "onboardingRemove" ||
-    phase === "onboardingRemoveConfirmation";
+    phase === "onboardingRemoveConfirmation" ||
+    phase === "onboardingFlip" ||
+    phase === "onboardingFlipConfirmation";
 
   return (
     <main className="tabletop-menu">

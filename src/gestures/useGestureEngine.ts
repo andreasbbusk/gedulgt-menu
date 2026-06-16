@@ -25,6 +25,9 @@ export function useGestureEngine({
   const removeOnboardingCocktail = useGedulgtTableStore(
     (s) => s.removeOnboardingCocktail,
   );
+  const flipOnboardingCocktail = useGedulgtTableStore(
+    (s) => s.flipOnboardingCocktail,
+  );
   const toggleCardFace = useGedulgtTableStore((s) => s.toggleCardFace);
   const addFocusedToTray = useGedulgtTableStore((s) => s.addFocusedToTray);
   const decrementTrayItem = useGedulgtTableStore((s) => s.decrementTrayItem);
@@ -95,6 +98,11 @@ export function useGestureEngine({
       }
 
       if (event.type === "FIST_TAP") {
+        if (phase === "onboardingFlip") {
+          flipOnboardingCocktail("near", now);
+          return;
+        }
+
         toggleCardFace("near", now);
         return;
       }
@@ -123,6 +131,7 @@ export function useGestureEngine({
       navigateOnboarding,
       addOnboardingCocktail,
       removeOnboardingCocktail,
+      flipOnboardingCocktail,
       toggleCardFace,
       addFocusedToTray,
       decrementTrayItem,

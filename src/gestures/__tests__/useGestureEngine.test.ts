@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => {
     navigateOnboarding: vi.fn(),
     addOnboardingCocktail: vi.fn(),
     removeOnboardingCocktail: vi.fn(),
+    flipOnboardingCocktail: vi.fn(),
     toggleCardFace: vi.fn(),
     addFocusedToTray: vi.fn(),
     decrementTrayItem: vi.fn(),

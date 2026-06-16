@@ -601,6 +601,96 @@ p {
   stroke-dashoffset: 0;
 }
 
+.onboarding-flip {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  color: var(--projected);
+}
+
+.onboarding-flip__tray {
+  z-index: 2;
+}
+
+.onboarding-flip__tray .tray__core {
+  display: grid;
+  place-items: center;
+  padding: clamp(28px, 4.6vmin, 48px);
+  text-align: center;
+}
+
+.onboarding-flip__tray p {
+  max-width: 14ch;
+  color: var(--projected);
+  font-size: clamp(0.82rem, 1.58vmin, 1.06rem);
+  font-weight: 850;
+  line-height: 1.02;
+  text-transform: uppercase;
+  transition: opacity 260ms ease;
+}
+
+.onboarding-flip__card {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + clamp(224px, 36vmin, 352px));
+  z-index: 8;
+  width: clamp(124px, 20.2vmin, 210px);
+  height: clamp(184px, 31vmin, 320px);
+  transform: translate(-50%, -50%);
+}
+
+.onboarding-flip__card .table-drink-card__name,
+.onboarding-flip__card .table-drink-card__back-name {
+  display: none;
+}
+
+.onboarding-flip__check {
+  position: absolute;
+  left: calc(50% + clamp(178px, 28vmin, 292px));
+  top: 50%;
+  z-index: 12;
+  width: clamp(86px, 18vmin, 156px);
+  color: #57c47b;
+  filter: drop-shadow(0 0 24px rgba(87, 196, 123, 0.34));
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.52) rotate(-12deg);
+  transition:
+    opacity 420ms ease,
+    transform 420ms cubic-bezier(0.68, -0.15, 0.265, 1.15);
+}
+
+.onboarding-flip__check circle {
+  fill: rgba(87, 196, 123, 0.1);
+  stroke: currentColor;
+  stroke-width: 3;
+}
+
+.onboarding-flip__check path {
+  fill: none;
+  stroke: currentColor;
+  stroke-dasharray: 72;
+  stroke-dashoffset: 72;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 6;
+  transition: stroke-dashoffset 560ms ease 120ms;
+}
+
+.onboarding-flip[data-confirmed="true"] .onboarding-flip__tray p {
+  opacity: 0;
+}
+
+.onboarding-flip[data-confirmed="true"] .onboarding-flip__check {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1) rotate(0deg);
+}
+
+.onboarding-flip[data-confirmed="true"] .onboarding-flip__check path {
+  stroke-dashoffset: 0;
+}
+
 .mirrored-wheel {
   position: absolute;
   inset: 0;
