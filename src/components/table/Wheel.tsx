@@ -8,8 +8,6 @@ import {
 } from "../../store/gedulgtTableStore";
 import { Card } from "./Card";
 
-gsap.registerPlugin(useGSAP);
-
 const FOCUSED_NEAR_ANGLE = 90;
 const MIRRORED_COPY_ANGLE = 180;
 const ORBIT_ANGLE_STEP = 30;

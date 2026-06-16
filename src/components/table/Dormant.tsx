@@ -2,8 +2,6 @@ import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 
-gsap.registerPlugin(useGSAP);
-
 export function Dormant() {
   const rootRef = useRef<HTMLElement | null>(null);
 

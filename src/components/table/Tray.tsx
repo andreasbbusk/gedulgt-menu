@@ -11,8 +11,6 @@ import {
 import { getDrinkImageSrc } from "./drinkAssets";
 import { cx, getSide } from "./utils";
 
-gsap.registerPlugin(useGSAP);
-
 type SelectedItems = ReturnType<typeof getSelectedDrinkItems>;
 
 const TOKEN_POSITIONS = [

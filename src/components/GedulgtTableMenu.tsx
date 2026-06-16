@@ -28,8 +28,6 @@ import {
   type TableSide,
 } from "../store/gedulgtTableStore";
 
-gsap.registerPlugin(useGSAP);
-
 type GedulgtTableMenuProps = {
   gesturesEnabled: boolean;
 };
