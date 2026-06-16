@@ -77,7 +77,7 @@ export function getTotalSelectedCount(items: SelectedDrinkItem[]) {
   return items.reduce((total, item) => total + item.quantity, 0);
 }
 
-export function parseDrinkPrice(price: string) {
+function parseDrinkPrice(price: string) {
   const match = price.match(/\d+/);
 
   return match ? Number(match[0]) : 0;

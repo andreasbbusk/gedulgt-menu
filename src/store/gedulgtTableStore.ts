@@ -267,13 +267,12 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
           }
 
           return {
-            selectedItems: state.selectedItems
-              .map((item) =>
-                item.drinkId === drinkId
-                  ? { ...item, quantity: item.quantity - 1 }
-                  : item,
-              )
-              .filter((item) => item.quantity > 0),
+            selectedItems: state.selectedItems.flatMap((item) => {
+              const quantity =
+                item.drinkId === drinkId ? item.quantity - 1 : item.quantity;
+
+              return quantity > 0 ? [{ ...item, quantity }] : [];
+            }),
             trayFeedback: null,
             phase: state.phase === "trayFeedback" ? "browseWheel" : state.phase,
             inputLockout: { side, until: time + 700 },
