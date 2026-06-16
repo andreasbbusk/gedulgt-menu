@@ -9,6 +9,7 @@ import {
 
 export type ExperiencePhase =
   | "dormant"
+  | "activationSuccess"
   | "onboarding"
   | "browseWheel"
   | "trayFeedback";
@@ -59,6 +60,7 @@ export type GedulgtTableState = {
 
 type GedulgtTableActions = {
   activate: (side: TableSide, time?: number) => void;
+  completeActivation: (time?: number) => void;
   deactivate: (side: TableSide, time?: number) => void;
   rotateWheel: (
     direction: RotateDirection,
@@ -114,12 +116,28 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
           }
 
           return {
-            phase: state.onboardingCompleted ? "browseWheel" : "onboarding",
+            phase: "activationSuccess",
             focusedDrinkId:
               state.focusedDrinkId || (GEDULGT_DRINKS[0]?.id ?? ""),
             cardFace: "front",
             trayFeedback: null,
             inputLockout: { side, until: time + 700 },
+            lastInteractionAt: time,
+          };
+        });
+      },
+
+      completeActivation: (time = Date.now()) => {
+        set((state) => {
+          if (state.phase !== "activationSuccess") {
+            return state;
+          }
+
+          return {
+            phase: "browseWheel",
+            onboardingCompleted: true,
+            trayFeedback: null,
+            inputLockout: null,
             lastInteractionAt: time,
           };
         });
@@ -140,7 +158,11 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
 
       rotateWheel: (direction, side, time = Date.now()) => {
         set((state) => {
-          if (state.phase === "dormant" || !canUseSide(state, side, time)) {
+          if (
+            state.phase === "dormant" ||
+            state.phase === "activationSuccess" ||
+            !canUseSide(state, side, time)
+          ) {
             return state;
           }
 
@@ -168,6 +190,7 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
         set((state) => {
           if (
             state.phase === "dormant" ||
+            state.phase === "activationSuccess" ||
             !isCanonicalDrink(drinkId) ||
             !canUseSide(state, side, time)
           ) {
@@ -193,7 +216,11 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
 
       toggleCardFace: (side, time = Date.now()) => {
         set((state) => {
-          if (state.phase === "dormant" || !canUseSide(state, side, time)) {
+          if (
+            state.phase === "dormant" ||
+            state.phase === "activationSuccess" ||
+            !canUseSide(state, side, time)
+          ) {
             return state;
           }
 
@@ -213,7 +240,11 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
 
       addFocusedToTray: (side, time = Date.now()) => {
         set((state) => {
-          if (state.phase === "dormant" || !canUseSide(state, side, time)) {
+          if (
+            state.phase === "dormant" ||
+            state.phase === "activationSuccess" ||
+            !canUseSide(state, side, time)
+          ) {
             return state;
           }
 
@@ -260,6 +291,7 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
         set((state) => {
           if (
             state.phase === "dormant" ||
+            state.phase === "activationSuccess" ||
             state.phase === "onboarding" ||
             !canUseSide(state, side, time)
           ) {

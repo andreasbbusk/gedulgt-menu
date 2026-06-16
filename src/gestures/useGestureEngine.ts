@@ -59,7 +59,7 @@ export function useGestureEngine({
       if (event.type === "DOUBLE_OPEN") {
         if (phase === "dormant") {
           activate("near", now);
-        } else {
+        } else if (phase !== "activationSuccess") {
           deactivate("near", now);
         }
         return;

@@ -52,6 +52,7 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
     feedback,
     lastInteractionAt,
     activate,
+    completeActivation,
     deactivate,
     rotateWheel,
     focusDrink,
@@ -71,6 +72,7 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
       feedback: state.trayFeedback,
       lastInteractionAt: state.lastInteractionAt,
       activate: state.activate,
+      completeActivation: state.completeActivation,
       deactivate: state.deactivate,
       rotateWheel: state.rotateWheel,
       focusDrink: state.focusDrink,
@@ -148,6 +150,20 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
     };
   }, [inactivityTimeout, phase]);
 
+  useEffect(() => {
+    if (phase !== "activationSuccess") {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      completeActivation(Date.now());
+    }, 950);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [completeActivation, phase]);
+
   useKeyboardInput({
     phase,
     activate,
@@ -194,8 +210,8 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
         <track kind="captions" />
       </video>
 
-      {phase === "dormant" ? (
-        <Dormant />
+      {phase === "dormant" || phase === "activationSuccess" ? (
+        <Dormant confirmed={phase === "activationSuccess"} />
       ) : (
         <>
           <Wheel
