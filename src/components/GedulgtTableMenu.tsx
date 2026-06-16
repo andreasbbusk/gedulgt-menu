@@ -13,6 +13,7 @@ import { useShallow } from "zustand/react/shallow";
 import { FEEDBACK_SETTLE_MS, cx } from "./table/utils";
 import { Dormant } from "./table/Dormant";
 import { Guide } from "./table/Guide";
+import { OnboardingIntro } from "./table/OnboardingIntro";
 import { Tray } from "./table/Tray";
 import { Wheel } from "./table/Wheel";
 import { usePointerInput } from "./table/usePointerInput";
@@ -210,8 +211,10 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
         <track kind="captions" />
       </video>
 
-      {phase === "dormant" || phase === "activationSuccess" ? (
-        <Dormant confirmed={phase === "activationSuccess"} />
+      {phase === "dormant" ? (
+        <Dormant />
+      ) : phase === "activationSuccess" ? (
+        <OnboardingIntro confirmed />
       ) : (
         <>
           <Wheel
