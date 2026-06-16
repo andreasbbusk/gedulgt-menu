@@ -1,12 +1,15 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, type PointerEvent } from "react";
 import { useHotkeys } from "@tanstack/react-hotkeys";
 import { useShallow } from "zustand/react/shallow";
 import { useGestureEngine } from "../gestures/useGestureEngine";
 import { useGedulgtTableStore } from "../store/gedulgtTableStore";
 import { OnboardingAddLayer } from "./OnboardingAddLayer";
 import { OnboardingNavigateLayer } from "./OnboardingNavigateLayer";
+import { OnboardingRemoveLayer } from "./OnboardingRemoveLayer";
 import { OnboardingIntro } from "./table/OnboardingIntro";
 import { usePointerInput } from "./table/usePointerInput";
+
+const ONBOARDING_REMOVE_SWIPE_DISTANCE = 94;
 
 type OnboardingScreenProps = {
   gesturesEnabled: boolean;
@@ -23,6 +26,8 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
     completeOnboardingNavigation,
     addOnboardingCocktail,
     completeOnboardingAdd,
+    removeOnboardingCocktail,
+    completeOnboardingRemove,
   } = useGedulgtTableStore(
     useShallow((state) => ({
       phase: state.phase,
@@ -33,8 +38,14 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
       completeOnboardingNavigation: state.completeOnboardingNavigation,
       addOnboardingCocktail: state.addOnboardingCocktail,
       completeOnboardingAdd: state.completeOnboardingAdd,
+      removeOnboardingCocktail: state.removeOnboardingCocktail,
+      completeOnboardingRemove: state.completeOnboardingRemove,
     })),
   );
+  const removePointerStartRef = useRef<{
+    pointerId: number;
+    y: number;
+  } | null>(null);
   const { videoRef } = useGestureEngine({ enabled: gesturesEnabled });
   const pointer = usePointerInput({
     tableRef: screenRef,
@@ -84,6 +95,20 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
     };
   }, [completeOnboardingAdd, phase]);
 
+  useEffect(() => {
+    if (phase !== "onboardingRemoveConfirmation") {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      completeOnboardingRemove(Date.now());
+    }, 1_050);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [completeOnboardingRemove, phase]);
+
   const handleForward = useCallback(() => {
     if (phase === "onboardingIntro") {
       activate("near");
@@ -105,6 +130,59 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
       navigateOnboarding("previous", "near");
     }
   }, [activate, navigateOnboarding, phase]);
+
+  const handlePointerDown = useCallback(
+    (event: PointerEvent<HTMLElement>) => {
+      pointer.onPointerDown(event);
+
+      if (phase !== "onboardingRemove") {
+        removePointerStartRef.current = null;
+        return;
+      }
+
+      const startedOnDrink = Boolean(
+        (event.target as HTMLElement).closest("[data-focused-card='true']"),
+      );
+
+      removePointerStartRef.current = startedOnDrink
+        ? { pointerId: event.pointerId, y: event.clientY }
+        : null;
+    },
+    [phase, pointer],
+  );
+
+  const handlePointerMove = useCallback(
+    (event: PointerEvent<HTMLElement>) => {
+      pointer.onPointerMove(event);
+
+      const removeStart = removePointerStartRef.current;
+
+      if (
+        phase !== "onboardingRemove" ||
+        !removeStart ||
+        removeStart.pointerId !== event.pointerId
+      ) {
+        return;
+      }
+
+      if (event.clientY - removeStart.y >= ONBOARDING_REMOVE_SWIPE_DISTANCE) {
+        removePointerStartRef.current = null;
+        removeOnboardingCocktail("near");
+      }
+    },
+    [phase, pointer, removeOnboardingCocktail],
+  );
+
+  const handlePointerEnd = useCallback(
+    (event: PointerEvent<HTMLElement>) => {
+      pointer.onPointerUp(event);
+
+      if (removePointerStartRef.current?.pointerId === event.pointerId) {
+        removePointerStartRef.current = null;
+      }
+    },
+    [pointer],
+  );
 
   useHotkeys(
     [
@@ -134,7 +212,11 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
       className="onboarding-screen"
       aria-label="Gedulgt Onboarding"
       data-gestures={gesturesEnabled ? "enabled" : "disabled"}
-      {...pointer}
+      onClickCapture={pointer.onClickCapture}
+      onPointerCancel={handlePointerEnd}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerEnd}
     >
       <video
         ref={videoRef}
@@ -153,6 +235,11 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
         />
       ) : phase === "onboardingAdd" || phase === "onboardingAddConfirmation" ? (
         <OnboardingAddLayer confirmed={phase === "onboardingAddConfirmation"} />
+      ) : phase === "onboardingRemove" ||
+        phase === "onboardingRemoveConfirmation" ? (
+        <OnboardingRemoveLayer
+          confirmed={phase === "onboardingRemoveConfirmation"}
+        />
       ) : (
         <OnboardingIntro confirmed={phase === "onboardingIntroConfirmation"} />
       )}

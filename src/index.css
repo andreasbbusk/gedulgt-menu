@@ -493,6 +493,114 @@ p {
   stroke-dashoffset: 0;
 }
 
+.onboarding-remove {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  color: var(--projected);
+}
+
+.onboarding-remove__tray {
+  z-index: 2;
+}
+
+.onboarding-remove__tray .tray__core {
+  display: grid;
+  place-items: center;
+  padding: clamp(28px, 4.6vmin, 48px);
+  text-align: center;
+}
+
+.onboarding-remove__tray p {
+  max-width: 14ch;
+  color: var(--projected);
+  font-size: clamp(0.82rem, 1.58vmin, 1.06rem);
+  font-weight: 850;
+  line-height: 1.02;
+  text-transform: uppercase;
+  transition: opacity 260ms ease;
+}
+
+.onboarding-remove__drink {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 24;
+  width: clamp(118px, 19vmin, 196px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+  transform: translate(-50%, calc(-50% - clamp(22px, 4vmin, 42px))) scale(0.62);
+  transition:
+    opacity 680ms ease,
+    transform 760ms cubic-bezier(0.68, -0.15, 0.265, 1.15);
+  will-change: transform, opacity;
+}
+
+.onboarding-remove__drink img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.42));
+  pointer-events: none;
+}
+
+.onboarding-remove__drink--removed {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, calc(-50% + clamp(152px, 25vmin, 248px)))
+    scale(0.86);
+}
+
+.onboarding-remove__check {
+  position: absolute;
+  left: calc(50% + clamp(178px, 28vmin, 292px));
+  top: 50%;
+  z-index: 12;
+  width: clamp(86px, 18vmin, 156px);
+  color: #57c47b;
+  filter: drop-shadow(0 0 24px rgba(87, 196, 123, 0.34));
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.52) rotate(-12deg);
+  transition:
+    opacity 420ms ease 520ms,
+    transform 420ms cubic-bezier(0.68, -0.15, 0.265, 1.15) 520ms;
+}
+
+.onboarding-remove__check circle {
+  fill: rgba(87, 196, 123, 0.1);
+  stroke: currentColor;
+  stroke-width: 3;
+}
+
+.onboarding-remove__check path {
+  fill: none;
+  stroke: currentColor;
+  stroke-dasharray: 72;
+  stroke-dashoffset: 72;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 6;
+  transition: stroke-dashoffset 560ms ease 640ms;
+}
+
+.onboarding-remove[data-confirmed="true"] .onboarding-remove__tray p {
+  opacity: 0;
+}
+
+.onboarding-remove[data-confirmed="true"] .onboarding-remove__check {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1) rotate(0deg);
+}
+
+.onboarding-remove[data-confirmed="true"] .onboarding-remove__check path {
+  stroke-dashoffset: 0;
+}
+
 .mirrored-wheel {
   position: absolute;
   inset: 0;

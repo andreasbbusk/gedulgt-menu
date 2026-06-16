@@ -22,6 +22,9 @@ export function useGestureEngine({
   const addOnboardingCocktail = useGedulgtTableStore(
     (s) => s.addOnboardingCocktail,
   );
+  const removeOnboardingCocktail = useGedulgtTableStore(
+    (s) => s.removeOnboardingCocktail,
+  );
   const toggleCardFace = useGedulgtTableStore((s) => s.toggleCardFace);
   const addFocusedToTray = useGedulgtTableStore((s) => s.addFocusedToTray);
   const decrementTrayItem = useGedulgtTableStore((s) => s.decrementTrayItem);
@@ -107,6 +110,11 @@ export function useGestureEngine({
       }
 
       if (event.type === "SWIPE_DOWN") {
+        if (phase === "onboardingRemove") {
+          removeOnboardingCocktail("near", now);
+          return;
+        }
+
         decrementTrayItem(focusedDrinkId, "near", now);
       }
     },
@@ -114,6 +122,7 @@ export function useGestureEngine({
       rotateWheel,
       navigateOnboarding,
       addOnboardingCocktail,
+      removeOnboardingCocktail,
       toggleCardFace,
       addFocusedToTray,
       decrementTrayItem,
