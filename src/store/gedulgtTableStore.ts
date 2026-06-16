@@ -11,7 +11,6 @@ export type ExperiencePhase =
 
 export type TableSide = "near" | "far";
 export type CardFace = "front" | "back";
-export type InteractionSource = "mouse" | "touch" | "gesture" | "keyboard";
 export type OnboardingStep = "browse" | "reveal" | "add";
 
 export type SelectedDrinkItem = {
@@ -49,58 +48,25 @@ export type GedulgtTableState = {
   selectedItems: SelectedDrinkItem[];
   onboardingCompleted: boolean;
   onboardingStep: OnboardingStep;
-  activeSide: TableSide;
   inputLockout: InputLockout | null;
   trayFeedback: TrayFeedback;
   lastInteractionAt: number;
-  lastInteractionSource: InteractionSource | null;
 };
 
 type GedulgtTableActions = {
-  activate: (
-    side: TableSide,
-    source: InteractionSource,
-    time?: number,
-  ) => void;
-  deactivate: (
-    side: TableSide,
-    source: InteractionSource,
-    time?: number,
-  ) => void;
+  activate: (side: TableSide, time?: number) => void;
+  deactivate: (side: TableSide, time?: number) => void;
   rotateWheel: (
     direction: RotateDirection,
     side: TableSide,
-    source: InteractionSource,
     time?: number,
   ) => void;
-  focusDrink: (
-    drinkId: string,
-    side: TableSide,
-    source: InteractionSource,
-    time?: number,
-  ) => void;
-  toggleCardFace: (
-    side: TableSide,
-    source: InteractionSource,
-    time?: number,
-  ) => void;
-  addFocusedToTray: (
-    side: TableSide,
-    source: InteractionSource,
-    time?: number,
-  ) => void;
-  decrementTrayItem: (
-    drinkId: string,
-    side: TableSide,
-    source: InteractionSource,
-    time?: number,
-  ) => void;
-  confirmOrder: (
-    side: TableSide,
-    source: InteractionSource,
-    time?: number,
-  ) => void;
-  resetExperience: (source: InteractionSource, time?: number) => void;
+  focusDrink: (drinkId: string, side: TableSide, time?: number) => void;
+  toggleCardFace: (side: TableSide, time?: number) => void;
+  addFocusedToTray: (side: TableSide, time?: number) => void;
+  decrementTrayItem: (drinkId: string, side: TableSide, time?: number) => void;
+  confirmOrder: (side: TableSide, time?: number) => void;
+  resetExperience: (time?: number) => void;
   inactivityTimeout: (time?: number) => void;
   clearTrayFeedback: (time?: number) => void;
 };
@@ -108,13 +74,15 @@ type GedulgtTableActions = {
 export type GedulgtTableStore = GedulgtTableState & GedulgtTableActions;
 
 export const INACTIVITY_TIMEOUT_MS = 60_000;
-export const SIDE_INPUT_LOCKOUT_MS = 700;
-export const ONBOARDING_STORAGE_KEY = "gedulgt:onboarding-completed";
+const SIDE_INPUT_LOCKOUT_MS = 700;
+const ONBOARDING_STORAGE_KEY = "gedulgt:onboarding-completed";
 
 const CANONICAL_DRINKS = GEDULGT_DRINKS.slice(0, 6);
 const FIRST_DRINK_ID = CANONICAL_DRINKS[0]?.id ?? GEDULGT_DRINKS[0]?.id ?? "";
 
-function getLiveState(time: number): Omit<GedulgtTableState, "onboardingCompleted"> {
+function getLiveState(
+  time: number,
+): Omit<GedulgtTableState, "onboardingCompleted"> {
   return {
     phase: "dormant",
     focusedDrinkId: FIRST_DRINK_ID,
@@ -122,11 +90,9 @@ function getLiveState(time: number): Omit<GedulgtTableState, "onboardingComplete
     cardFace: "front",
     selectedItems: [],
     onboardingStep: "browse",
-    activeSide: "near",
     inputLockout: null,
     trayFeedback: null,
     lastInteractionAt: time,
-    lastInteractionSource: null,
   };
 }
 
@@ -158,19 +124,13 @@ function canUseSide(state: GedulgtTableState, side: TableSide, time: number) {
   );
 }
 
-function withInteraction(
-  side: TableSide,
-  source: InteractionSource,
-  time: number,
-) {
+function withInteraction(side: TableSide, time: number) {
   return {
-    activeSide: side,
     inputLockout: {
       side,
       until: time + SIDE_INPUT_LOCKOUT_MS,
     },
     lastInteractionAt: time,
-    lastInteractionSource: source,
   } satisfies Partial<GedulgtTableState>;
 }
 
@@ -219,7 +179,7 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
       ...getLiveState(Date.now()),
       onboardingCompleted: false,
 
-      activate: (side, source, time = Date.now()) => {
+      activate: (side, time = Date.now()) => {
         set((state) => {
           if (!canUseSide(state, side, time)) {
             return state;
@@ -230,12 +190,12 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
             focusedDrinkId: state.focusedDrinkId || FIRST_DRINK_ID,
             cardFace: "front",
             trayFeedback: null,
-            ...withInteraction(side, source, time),
+            ...withInteraction(side, time),
           };
         });
       },
 
-      deactivate: (side, source, time = Date.now()) => {
+      deactivate: (side, time = Date.now()) => {
         set((state) => {
           if (!canUseSide(state, side, time)) {
             return state;
@@ -244,14 +204,14 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
           return {
             ...getLiveState(time),
             onboardingCompleted: state.onboardingCompleted,
-            ...withInteraction(side, source, time),
+            ...withInteraction(side, time),
             phase: "dormant",
             inputLockout: null,
           };
         });
       },
 
-      rotateWheel: (direction, side, source, time = Date.now()) => {
+      rotateWheel: (direction, side, time = Date.now()) => {
         set((state) => {
           if (state.phase === "dormant" || !canUseSide(state, side, time)) {
             return state;
@@ -273,12 +233,12 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
                 : state.onboardingStep,
             trayFeedback: null,
             phase: state.phase === "trayFeedback" ? "browseWheel" : state.phase,
-            ...withInteraction(side, source, time),
+            ...withInteraction(side, time),
           };
         });
       },
 
-      focusDrink: (drinkId, side, source, time = Date.now()) => {
+      focusDrink: (drinkId, side, time = Date.now()) => {
         set((state) => {
           if (
             state.phase === "dormant" ||
@@ -300,12 +260,12 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
             cardFace: "front",
             trayFeedback: null,
             phase: state.phase === "trayFeedback" ? "browseWheel" : state.phase,
-            ...withInteraction(side, source, time),
+            ...withInteraction(side, time),
           };
         });
       },
 
-      toggleCardFace: (side, source, time = Date.now()) => {
+      toggleCardFace: (side, time = Date.now()) => {
         set((state) => {
           if (state.phase === "dormant" || !canUseSide(state, side, time)) {
             return state;
@@ -319,12 +279,12 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
                 : state.onboardingStep,
             trayFeedback: null,
             phase: state.phase === "trayFeedback" ? "browseWheel" : state.phase,
-            ...withInteraction(side, source, time),
+            ...withInteraction(side, time),
           };
         });
       },
 
-      addFocusedToTray: (side, source, time = Date.now()) => {
+      addFocusedToTray: (side, time = Date.now()) => {
         set((state) => {
           if (state.phase === "dormant" || !canUseSide(state, side, time)) {
             return state;
@@ -338,7 +298,7 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
               selectedItems: [],
               trayFeedback: { type: "added", drinkId: state.focusedDrinkId },
               cardFace: "front",
-              ...withInteraction(side, source, time),
+              ...withInteraction(side, time),
             };
           }
 
@@ -351,12 +311,12 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
             selectedItems: items,
             phase: "trayFeedback",
             trayFeedback: feedback,
-            ...withInteraction(side, source, time),
+            ...withInteraction(side, time),
           };
         });
       },
 
-      decrementTrayItem: (drinkId, side, source, time = Date.now()) => {
+      decrementTrayItem: (drinkId, side, time = Date.now()) => {
         set((state) => {
           if (
             state.phase === "dormant" ||
@@ -376,12 +336,12 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
               .filter((item) => item.quantity > 0),
             trayFeedback: null,
             phase: state.phase === "trayFeedback" ? "browseWheel" : state.phase,
-            ...withInteraction(side, source, time),
+            ...withInteraction(side, time),
           };
         });
       },
 
-      confirmOrder: (side, source, time = Date.now()) => {
+      confirmOrder: (side, time = Date.now()) => {
         set((state) => {
           if (
             state.phase === "dormant" ||
@@ -396,16 +356,15 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
             phase: "orderConfirmation",
             trayFeedback: null,
             cardFace: "front",
-            ...withInteraction(side, source, time),
+            ...withInteraction(side, time),
           };
         });
       },
 
-      resetExperience: (source, time = Date.now()) => {
+      resetExperience: (time = Date.now()) => {
         set((state) => ({
           ...getLiveState(time),
           onboardingCompleted: state.onboardingCompleted,
-          lastInteractionSource: source,
         }));
       },
 
@@ -426,9 +385,8 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
         set((state) => ({
           trayFeedback: null,
           phase: state.phase === "trayFeedback" ? "browseWheel" : state.phase,
-          lastInteractionAt: state.phase === "trayFeedback"
-            ? state.lastInteractionAt
-            : time,
+          lastInteractionAt:
+            state.phase === "trayFeedback" ? state.lastInteractionAt : time,
         }));
       },
     }),
@@ -446,7 +404,9 @@ export function getCanonicalDrinks() {
   return CANONICAL_DRINKS;
 }
 
-export function getFocusedDrink(state: Pick<GedulgtTableState, "focusedDrinkId">) {
+export function getFocusedDrink(
+  state: Pick<GedulgtTableState, "focusedDrinkId">,
+) {
   return (
     CANONICAL_DRINKS.find((drink) => drink.id === state.focusedDrinkId) ??
     CANONICAL_DRINKS[0]
@@ -479,7 +439,7 @@ export function getWheelSlots(
   );
 }
 
-export function getDrinkById(drinkId: string) {
+function getDrinkById(drinkId: string) {
   return CANONICAL_DRINKS.find((drink) => drink.id === drinkId) ?? null;
 }
 

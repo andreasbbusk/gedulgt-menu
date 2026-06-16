@@ -40,7 +40,6 @@ export function Dormant() {
   return (
     <section ref={rootRef} className="dormant-state" aria-label="Dormant">
       <div className="dormant-state__visual">
-        <span className="dormant-state__halo" aria-hidden="true" />
         <span className="dormant-state__mark">Gedulgt</span>
       </div>
     </section>

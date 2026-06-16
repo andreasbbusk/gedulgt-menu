@@ -8,13 +8,24 @@ import {
 	type TrayFeedback,
 	type getSelectedDrinkItems,
 } from '../../store/gedulgtTableStore';
+import { getDrinkImageSrc } from './drinkAssets';
 import { cx, getSide } from './utils';
 
 gsap.registerPlugin(useGSAP);
 
 type SelectedItems = ReturnType<typeof getSelectedDrinkItems>;
 
-function getTrayTokenPosition(index: number, count: number) {
+// Deterministic scattered grid positions — slightly spread out, varied in x and y
+const SCATTER = [
+	{ dx: 0, dy: -10 },
+	{ dx: 74, dy: 56 },
+	{ dx: -86, dy: 42 },
+	{ dx: 16, dy: -106 },
+	{ dx: -76, dy: -76 },
+	{ dx: 91, dy: -66 },
+];
+
+function getTrayTokenPosition(index: number) {
 	const compact =
 		typeof window !== 'undefined' &&
 		window.matchMedia('(max-width: 760px)').matches;
@@ -41,12 +52,14 @@ function getTrayTokenPosition(index: number, count: number) {
 	const angle = startAngle + ((endAngle - startAngle) / (count - 1)) * index;
 	const radians = (angle * Math.PI) / 180;
 	const badgeDistance = compact ? 25 : 29;
+	const scale = compact ? 0.72 : 1;
+	const s = SCATTER[index % SCATTER.length];
 
 	return {
-		badgeX: Math.cos(radians) * badgeDistance,
-		badgeY: Math.sin(radians) * badgeDistance,
-		x: Math.cos(radians) * radius,
-		y: Math.sin(radians) * radius,
+		badgeX: 0,
+		badgeY: -24,
+		x: s.dx * scale,
+		y: s.dy * scale,
 	};
 }
 
@@ -68,6 +81,7 @@ export function Tray({
 	onConfirm,
 }: TrayProps) {
 	const trayRef = useRef<HTMLElement | null>(null);
+	const previousCountRef = useRef(totalCount);
 	const hasItems = totalCount > 0;
 	const total = getOrderTotal(items);
 
@@ -75,7 +89,7 @@ export function Tray({
 		() => {
 			const tray = trayRef.current;
 
-			if (!tray || !feedback) {
+			if (!tray) {
 				return;
 			}
 
@@ -84,8 +98,10 @@ export function Tray({
 			).matches;
 			const tokens = tray.querySelectorAll('.tray-token');
 			const pulse = tray.querySelector('.tray__feedback-pulse');
+			const countChanged = previousCountRef.current !== totalCount;
+			const entersFromCenter = previousCountRef.current === 0 && totalCount > 0;
 
-			if (pulse) {
+			if (pulse && feedback) {
 				gsap.fromTo(
 					pulse,
 					{ autoAlpha: 0.8, scale: 0.34 },
@@ -99,19 +115,39 @@ export function Tray({
 				);
 			}
 
-			if (tokens.length > 0) {
-				gsap.fromTo(
-					tokens,
-					{ autoAlpha: 0 },
-					{
-						autoAlpha: 1,
-						stagger: { amount: 0.18, from: 'center' },
-						duration: reduceMotion ? 0 : 0.54,
-						ease: 'power2.out',
-						overwrite: 'auto',
-					},
-				);
+			if (tokens.length > 0 && countChanged) {
+				if (entersFromCenter) {
+					gsap.fromTo(
+						tokens,
+						{
+							autoAlpha: 0,
+							scale: 0,
+						},
+						{
+							autoAlpha: 1,
+							scale: 1,
+							stagger: { amount: 0.2, from: 'center' },
+							duration: reduceMotion ? 0 : 0.68,
+							ease: 'back.out',
+							overwrite: 'auto',
+						},
+					);
+				} else {
+					gsap.fromTo(
+						tokens,
+						{ autoAlpha: 0 },
+						{
+							autoAlpha: 1,
+							stagger: { amount: 0.18, from: 'center' },
+							duration: reduceMotion ? 0 : 0.54,
+							ease: 'power2.out',
+							overwrite: 'auto',
+						},
+					);
+				}
 			}
+
+			previousCountRef.current = totalCount;
 		},
 		{ dependencies: [feedback, totalCount], scope: trayRef },
 	);
@@ -130,17 +166,15 @@ export function Tray({
 
 			<div className='tray__tokens' aria-label='Selected drinks'>
 				{items.map((item, index) => {
-					const tokenPosition = getTrayTokenPosition(index, items.length);
-					const pngImage = new URL(
-						`../../assets/${item.drink.pngImage}`,
-						import.meta.url,
-					).href;
+					const tokenPosition = getTrayTokenPosition(index);
+					const imageSrc = getDrinkImageSrc(item.drink.imageId);
 
 					return (
 						<button
 							key={item.drinkId}
 							type='button'
 							className='tray-token'
+							data-drink-id={item.drink.id}
 							style={
 								{
 									'--badge-x': `${tokenPosition.badgeX}px`,
@@ -158,7 +192,7 @@ export function Tray({
 							}}
 							aria-label={`Remove one ${item.drink.name}`}>
 							<img
-								src={pngImage}
+								src={imageSrc}
 								alt={item.drink.name}
 								className='drink-card__image'
 							/>
@@ -168,17 +202,9 @@ export function Tray({
 				})}
 			</div>
 
-			<button
-				type='button'
-				className='tray__confirm'
-				data-tray-confirm
-				disabled={!hasItems || phase === 'orderConfirmation'}
-				onClick={(event) => {
-					onConfirm(getSide(event.clientY, trayRef.current));
-				}}>
-				<span>Order drinks</span>
+			<div className='tray__confirm'>
 				{hasItems && <strong>{formatPrice(total)}</strong>}
-			</button>
+			</div>
 		</section>
 	);
 }

@@ -7,19 +7,18 @@ import {
 	type RefObject,
 } from 'react';
 import { useGSAP } from '@gsap/react';
+import { useHotkeys } from '@tanstack/react-hotkeys';
 import gsap from 'gsap';
 import { FEEDBACK_SETTLE_MS, cx } from './table/utils';
 import { Dormant } from './table/Dormant';
 import { Guide } from './table/Guide';
-import { Order } from './table/Order';
 import { Tray } from './table/Tray';
 import { Wheel } from './table/Wheel';
-import { useGestureInput } from './table/useGestureInput';
 import { usePointerInput } from './table/usePointerInput';
+import { useGestureEngine } from '../gestures/useGestureEngine';
 import {
 	INACTIVITY_TIMEOUT_MS,
 	getFocusedDrink,
-	getOrderTotal,
 	getSelectedDrinkItems,
 	getTotalSelectedCount,
 	getWheelSlots,
@@ -28,24 +27,16 @@ import {
 	type GedulgtTableStore,
 	type TableSide,
 } from '../store/gedulgtTableStore';
-import type { HandTrackingSnapshot } from '../hooks/useHandTracking';
 
 gsap.registerPlugin(useGSAP);
 
 type GedulgtTableMenuProps = {
 	gesturesEnabled: boolean;
-	trackingRef: {
-		current: HandTrackingSnapshot;
-	};
 };
 
-export function GedulgtTableMenu({
-	gesturesEnabled,
-	trackingRef,
-}: GedulgtTableMenuProps) {
+export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
 	const tableRef = useRef<HTMLElement | null>(null);
 	const phase = useGedulgtTableStore((state) => state.phase);
-	const activeSide = useGedulgtTableStore((state) => state.activeSide);
 	const focusedDrinkId = useGedulgtTableStore((state) => state.focusedDrinkId);
 	const wheelPosition = useGedulgtTableStore((state) => state.wheelPosition);
 	const cardFace = useGedulgtTableStore((state) => state.cardFace);
@@ -90,10 +81,6 @@ export function GedulgtTableMenu({
 		() => getTotalSelectedCount(selectedItems),
 		[selectedItems],
 	);
-	const orderTotal = useMemo(
-		() => getOrderTotal(selectedItems),
-		[selectedItems],
-	);
 
 	const pointer = usePointerInput({
 		tableRef,
@@ -101,18 +88,7 @@ export function GedulgtTableMenu({
 		onRotate: rotateWheel,
 	});
 
-	useGestureInput({
-		enabled: gesturesEnabled,
-		tableRef,
-		trackingRef,
-		activeSide,
-		phase,
-		focusedDrinkId,
-		activate,
-		addFocusedToTray,
-		rotateWheel,
-		toggleCardFace,
-	});
+	const { videoRef } = useGestureEngine({ enabled: gesturesEnabled });
 
 	useAmbientMotion(tableRef);
 	usePhaseGlow(tableRef, phase);
@@ -162,12 +138,12 @@ export function GedulgtTableMenu({
 	const handleDrinkClick = useCallback(
 		(drinkId: string, side: TableSide) => {
 			if (drinkId === focusedDrinkId) {
-				toggleCardFace(side, 'mouse');
+				toggleCardFace(side);
 				return;
 			}
 
-			focusDrink(drinkId, side, 'mouse');
-			toggleCardFace(side, 'mouse');
+			focusDrink(drinkId, side);
+			toggleCardFace(side);
 		},
 		[focusDrink, focusedDrinkId, toggleCardFace],
 	);
@@ -176,11 +152,23 @@ export function GedulgtTableMenu({
 		<section
 			ref={tableRef}
 			className={cx('projection-table', `projection-table--${phase}`)}
-			style={{ '--drink-accent': focusedDrink.accent } as CSSProperties}
+			style={
+				{
+					'--drink-accent':
+						(focusedDrink as typeof focusedDrink & { accent?: string })
+							.accent ?? '#78b99a',
+				} as CSSProperties
+			}
 			aria-label='Gedulgt Table Menu'
 			data-gestures={gesturesEnabled ? 'enabled' : 'disabled'}
 			{...pointer}>
-			<Ambient />
+			<video
+				ref={videoRef}
+				style={{ display: 'none' }}
+				aria-hidden='true'
+				tabIndex={-1}>
+				<track kind='captions' />
+			</video>
 
 			{phase === 'dormant' ? (
 				<Dormant />
@@ -197,36 +185,13 @@ export function GedulgtTableMenu({
 						totalCount={selectedCount}
 						feedback={feedback}
 						phase={phase}
-						onDecrement={(drinkId, side) =>
-							decrementTrayItem(drinkId, side, 'mouse')
-						}
-						onConfirm={(side) => confirmOrder(side, 'mouse')}
+						onDecrement={(drinkId, side) => decrementTrayItem(drinkId, side)}
+						onConfirm={(side) => confirmOrder(side)}
 					/>
 					{phase === 'onboarding' && <Guide step={onboardingStep} />}
-					{phase === 'orderConfirmation' && (
-						<Order
-							items={selectedDrinks}
-							total={orderTotal}
-							onReset={() => resetExperience('mouse')}
-						/>
-					)}
 				</>
 			)}
 		</section>
-	);
-}
-
-function Ambient() {
-	return (
-		<div className='projection-table__ambient' aria-hidden='true'>
-			<span className='projection-table__grain' />
-			<span className='projection-table__light-pool' />
-			<span className='projection-table__smoke projection-table__smoke--a' />
-			<span className='projection-table__smoke projection-table__smoke--b' />
-			<span className='projection-table__prism projection-table__prism--a' />
-			<span className='projection-table__prism projection-table__prism--b' />
-			<span className='projection-table__rim' />
-		</div>
 	);
 }
 
@@ -366,76 +331,51 @@ function useKeyboardInput({
 	addFocusedToTray,
 	resetExperience,
 }: KeyboardInput) {
-	useEffect(() => {
-		const onKeyDown = (event: KeyboardEvent) => {
-			if (event.altKey || event.ctrlKey || event.metaKey) {
-				return;
-			}
+	const activateOr = (callback: () => void) => {
+		if (phase === 'dormant') {
+			activate('near');
+			return;
+		}
 
-			if (event.key === 'Escape') {
-				event.preventDefault();
-				if (phase === 'orderConfirmation') {
-					resetExperience('keyboard');
-				} else if (phase !== 'dormant') {
-					deactivate('near', 'keyboard');
-				}
-				return;
-			}
+		callback();
+	};
 
-			if (event.key === 'ArrowLeft') {
-				event.preventDefault();
-				if (phase === 'dormant') {
-					activate('near', 'keyboard');
-				} else {
-					rotateWheel('previous', 'near', 'keyboard');
-				}
-				return;
-			}
-
-			if (event.key === 'ArrowRight') {
-				event.preventDefault();
-				if (phase === 'dormant') {
-					activate('near', 'keyboard');
-				} else {
-					rotateWheel('next', 'near', 'keyboard');
-				}
-				return;
-			}
-
-			if (event.key === 'Enter') {
-				event.preventDefault();
-				if (phase === 'dormant') {
-					activate('near', 'keyboard');
-				} else if (phase === 'orderConfirmation') {
-					resetExperience('keyboard');
-				} else {
-					toggleCardFace('near', 'keyboard');
-				}
-				return;
-			}
-
-			if (event.key === ' ') {
-				event.preventDefault();
-				if (phase === 'dormant') {
-					activate('near', 'keyboard');
-				} else {
-					addFocusedToTray('near', 'keyboard');
-				}
-			}
-		};
-
-		window.addEventListener('keydown', onKeyDown);
-
-		return () => {
-			window.removeEventListener('keydown', onKeyDown);
-		};
-	}, [
-		activate,
-		addFocusedToTray,
-		deactivate,
-		phase,
-		resetExperience,
-		rotateWheel,
-		toggleCardFace,
-	]);
+	useHotkeys(
+		[
+			{
+				hotkey: 'Escape',
+				callback: () => {
+					if (phase === 'orderConfirmation') {
+						resetExperience();
+					} else if (phase !== 'dormant') {
+						deactivate('near');
+					}
+				},
+			},
+			{
+				hotkey: 'ArrowLeft',
+				callback: () => activateOr(() => rotateWheel('previous', 'near')),
+			},
+			{
+				hotkey: 'ArrowRight',
+				callback: () => activateOr(() => rotateWheel('next', 'near')),
+			},
+			{
+				hotkey: 'Enter',
+				callback: () =>
+					activateOr(() => {
+						if (phase === 'orderConfirmation') {
+							resetExperience();
+						} else {
+							toggleCardFace('near');
+						}
+					}),
+			},
+			{
+				hotkey: 'Space',
+				callback: () => activateOr(() => addFocusedToTray('near')),
+			},
+		],
+		{ preventDefault: true, stopPropagation: false },
+	);
 }
