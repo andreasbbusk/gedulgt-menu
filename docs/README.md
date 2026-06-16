@@ -7,7 +7,7 @@ The Gedulgt Table Menu is a projected, gesture-ready menu experience for a round
 ## Reading Order
 
 1. [Experience Concept](./experience-concept.md) - physical context, guest experience, and design rationale.
-2. [Interaction Model](./interaction-model.md) - state flow, onboarding, mirrored wheel, card flip, Tray, and order confirmation.
+2. [Interaction Model](./interaction-model.md) - state flow, onboarding, mirrored wheel, card flip, and Tray behavior.
 3. [Visual System](./visual-system.md) - projected table layout, dark Gedulgt tone, motion, help cues, and UI copy.
 4. [Technical Architecture](./technical-architecture.md) - React architecture, Zustand store shape, input model, setup, calibration, and debug tools.
 5. [Refactor Plan](./refactor-plan.md) - phased implementation checklist for the experience rewrite.
@@ -31,7 +31,7 @@ The Gedulgt Table Menu is a projected, gesture-ready menu experience for a round
 - Onboarding completion persists in local browser memory.
 - The Tray can contain a maximum of six total selected drinks.
 - Duplicate drink selections increase quantity.
-- The confirmation state shows individual prices and total price in compact DKK format.
+- The Tray shows the total price in compact DKK format.
 - Exact hand gesture recognition is future work; docs define semantic actions first.
 
 ## Open Decisions

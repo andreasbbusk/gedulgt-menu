@@ -45,8 +45,7 @@ type ExperiencePhase =
   | "dormant"
   | "onboarding"
   | "browseWheel"
-  | "trayFeedback"
-  | "orderConfirmation";
+  | "trayFeedback";
 
 type TableSide = "near" | "far";
 type CardFace = "front" | "back";
@@ -152,13 +151,6 @@ type ExperienceAction =
       source: InteractionSource;
       time: number;
     }
-  | {
-      type: "CONFIRM_ORDER";
-      side: TableSide;
-      source: InteractionSource;
-      time: number;
-    }
-  | { type: "RESET_EXPERIENCE"; source: InteractionSource; time: number }
   | { type: "INACTIVITY_TIMEOUT"; time: number }
   | { type: "CLEAR_TRAY_FEEDBACK"; time: number };
 ```
@@ -186,7 +178,7 @@ Dormant clears live state but must not clear persisted onboarding completion.
 
 Recommended selectors:
 
-- `getCanonicalDrinks()` - first six current drinks for v1.
+- First six `GEDULGT_DRINKS` entries - canonical drinks for v1.
 - `getFocusedDrink()` - drink matching `focusedDrinkId`.
 - `getWheelSlots()` - twelve visible slots derived from six canonical drinks.
 - `getNearFocusedSlot()` - near-side focused visual card.
@@ -194,7 +186,6 @@ Recommended selectors:
 - `getTotalSelectedCount()` - sum of quantities.
 - `getOrderTotal()` - sum of selected quantities multiplied by parsed drink prices.
 - `canAddFocusedDrink()` - total selected count less than `MAX_SELECTED_DRINKS`.
-- `canConfirmOrder()` - at least one selected item.
 - `isOppositeSideLocked(side, time)` - lockout helper.
 
 ## Wheel Slot Model
@@ -227,8 +218,7 @@ Suggested component responsibilities:
 | `OnboardingGuide`      | Three-step guided interaction with hand icons and success pulses. |
 | `MirroredDrinkWheel`   | Computes/renders near and far drink cards.                        |
 | `DrinkCard`            | Front/back card faces, focused state, flip animation.             |
-| `Tray`                 | Radial selected tokens, add feedback, confirm affordance.         |
-| `OrderConfirmation`    | Readable waiter-facing order summary.                             |
+| `Tray`                 | Radial selected tokens, add feedback, and passive total display.  |
 | `GestureHelpCue`       | Contextual hand icon, motion traces, success/failure pulse.       |
 | `EdgeWell`             | Near/far activation/deactivation hold zones.                      |
 | `InputAdapter`         | Normalizes mouse/touch/gesture input into semantic actions.       |
@@ -261,7 +251,6 @@ Mouse/web mappings:
 - focused card click -> `TOGGLE_CARD_FACE`
 - inward drag/swipe -> `ADD_FOCUSED_TO_TRAY`
 - Tray token click -> `DECREMENT_TRAY_ITEM`
-- Tray confirm action -> `CONFIRM_ORDER`
 - edge well hold -> `ACTIVATE` or `DEACTIVATE`
 
 ## Side Detection And Lockout

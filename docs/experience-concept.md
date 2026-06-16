@@ -32,8 +32,8 @@ The guest should understand the table as a single projected object:
 6. The focused drink can be revealed by flipping its card.
 7. The focused drink can be dragged or swiped into the Tray.
 8. Selected drinks gather as tokens in the center.
-9. The Tray can bloom into a readable order confirmation for the waiter.
-10. Reset returns the table to dormant.
+9. The Tray shows a compact running total.
+10. Inactivity or edge-well deactivation returns the table to dormant.
 
 The product should not feel like a kiosk, landing page, ordering tablet, or normal e-commerce cart. It is a projected ritual that happens to collect an order.
 
@@ -82,7 +82,7 @@ flowchart TB
 - **One shared table:** both guests see and affect one shared state.
 - **Learn by doing:** onboarding proves motion ability through short required actions.
 - **Focused clarity:** only the focused drink is visually dominant; other drinks are ghosted.
-- **Practical at the end:** order confirmation must be readable enough for a waiter.
+- **Practical at the center:** selected drinks and total price must remain legible without turning into a conventional cart.
 - **Mouse mirrors gestures:** the web prototype uses mouse actions that map to the same semantic actions as future gestures.
 
 ## Design Rationale
