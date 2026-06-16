@@ -4,9 +4,11 @@ import gsap from "gsap";
 import {
   formatPrice,
   getOrderTotal,
+  type getSelectedDrinkItems,
+} from "../../domain/menu";
+import {
   type TableSide,
   type TrayFeedback,
-  type getSelectedDrinkItems,
 } from "../../store/gedulgtTableStore";
 import { getDrinkImageSrc } from "./drinkAssets";
 import { cx, getSide } from "./utils";
@@ -42,18 +44,10 @@ type TrayProps = {
   items: SelectedItems;
   totalCount: number;
   feedback: TrayFeedback;
-  phase: string;
   onDecrement: (drinkId: string, side: TableSide) => void;
-  onConfirm: (side: TableSide) => void;
 };
 
-export function Tray({
-  items,
-  totalCount,
-  feedback,
-  phase,
-  onDecrement,
-}: TrayProps) {
+export function Tray({ items, totalCount, feedback, onDecrement }: TrayProps) {
   const trayRef = useRef<HTMLElement | null>(null);
   const previousCountRef = useRef(totalCount);
   const hasItems = totalCount > 0;
@@ -129,11 +123,7 @@ export function Tray({
   return (
     <section
       ref={trayRef}
-      className={cx(
-        "tray",
-        hasItems && "tray--populated",
-        phase === "orderConfirmation" && "tray--confirming",
-      )}
+      className={cx("tray", hasItems && "tray--populated")}
       aria-label="Tray"
     >
       <span className="tray__feedback-pulse" aria-hidden="true" />

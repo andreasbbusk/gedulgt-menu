@@ -9,24 +9,32 @@ import {
 import { useGSAP } from "@gsap/react";
 import { useHotkeys } from "@tanstack/react-hotkeys";
 import gsap from "gsap";
+import { useShallow } from "zustand/react/shallow";
 import { FEEDBACK_SETTLE_MS, cx } from "./table/utils";
 import { Dormant } from "./table/Dormant";
 import { Guide } from "./table/Guide";
 import { Tray } from "./table/Tray";
 import { Wheel } from "./table/Wheel";
 import { usePointerInput } from "./table/usePointerInput";
-import { useGestureEngine } from "../gestures/useGestureEngine";
 import {
-  INACTIVITY_TIMEOUT_MS,
   getFocusedDrink,
   getSelectedDrinkItems,
   getTotalSelectedCount,
   getWheelSlots,
+} from "../domain/menu";
+import { useGestureEngine } from "../gestures/useGestureEngine";
+import {
+  INACTIVITY_TIMEOUT_MS,
   useGedulgtTableStore,
   type ExperiencePhase,
   type GedulgtTableStore,
   type TableSide,
 } from "../store/gedulgtTableStore";
+
+const reducedMotion =
+  typeof window !== "undefined"
+    ? window.matchMedia("(prefers-reduced-motion: reduce)")
+    : { matches: false };
 
 type GedulgtTableMenuProps = {
   gesturesEnabled: boolean;
@@ -34,39 +42,50 @@ type GedulgtTableMenuProps = {
 
 export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
   const tableRef = useRef<HTMLElement | null>(null);
-  const phase = useGedulgtTableStore((state) => state.phase);
-  const focusedDrinkId = useGedulgtTableStore((state) => state.focusedDrinkId);
-  const wheelPosition = useGedulgtTableStore((state) => state.wheelPosition);
-  const cardFace = useGedulgtTableStore((state) => state.cardFace);
-  const selectedItems = useGedulgtTableStore((state) => state.selectedItems);
-  const onboardingStep = useGedulgtTableStore((state) => state.onboardingStep);
-  const feedback = useGedulgtTableStore((state) => state.trayFeedback);
-  const lastInteractionAt = useGedulgtTableStore(
-    (state) => state.lastInteractionAt,
-  );
-  const activate = useGedulgtTableStore((state) => state.activate);
-  const deactivate = useGedulgtTableStore((state) => state.deactivate);
-  const rotateWheel = useGedulgtTableStore((state) => state.rotateWheel);
-  const focusDrink = useGedulgtTableStore((state) => state.focusDrink);
-  const toggleCardFace = useGedulgtTableStore((state) => state.toggleCardFace);
-  const addFocusedToTray = useGedulgtTableStore(
-    (state) => state.addFocusedToTray,
-  );
-  const decrementTrayItem = useGedulgtTableStore(
-    (state) => state.decrementTrayItem,
-  );
-  const confirmOrder = useGedulgtTableStore((state) => state.confirmOrder);
-  const resetExperience = useGedulgtTableStore(
-    (state) => state.resetExperience,
-  );
-  const inactivityTimeout = useGedulgtTableStore(
-    (state) => state.inactivityTimeout,
-  );
-  const clearTrayFeedback = useGedulgtTableStore(
-    (state) => state.clearTrayFeedback,
+  const {
+    phase,
+    focusedDrinkId,
+    wheelPosition,
+    cardFace,
+    selectedItems,
+    onboardingStep,
+    feedback,
+    lastInteractionAt,
+    activate,
+    deactivate,
+    rotateWheel,
+    focusDrink,
+    toggleCardFace,
+    addFocusedToTray,
+    decrementTrayItem,
+    inactivityTimeout,
+    clearTrayFeedback,
+  } = useGedulgtTableStore(
+    useShallow((state) => ({
+      phase: state.phase,
+      focusedDrinkId: state.focusedDrinkId,
+      wheelPosition: state.wheelPosition,
+      cardFace: state.cardFace,
+      selectedItems: state.selectedItems,
+      onboardingStep: state.onboardingStep,
+      feedback: state.trayFeedback,
+      lastInteractionAt: state.lastInteractionAt,
+      activate: state.activate,
+      deactivate: state.deactivate,
+      rotateWheel: state.rotateWheel,
+      focusDrink: state.focusDrink,
+      toggleCardFace: state.toggleCardFace,
+      addFocusedToTray: state.addFocusedToTray,
+      decrementTrayItem: state.decrementTrayItem,
+      inactivityTimeout: state.inactivityTimeout,
+      clearTrayFeedback: state.clearTrayFeedback,
+    })),
   );
 
-  const focusedDrink = getFocusedDrink({ focusedDrinkId });
+  const focusedDrink = useMemo(
+    () => getFocusedDrink({ focusedDrinkId }),
+    [focusedDrinkId],
+  );
   const wheelSlots = useMemo(
     () => getWheelSlots({ focusedDrinkId }),
     [focusedDrinkId],
@@ -91,6 +110,12 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
   useAmbientMotion(tableRef);
   usePhaseGlow(tableRef, phase);
 
+  const lastInteractionRef = useRef(lastInteractionAt);
+
+  useEffect(() => {
+    lastInteractionRef.current = lastInteractionAt;
+  }, [lastInteractionAt]);
+
   useEffect(() => {
     if (!feedback) {
       return;
@@ -113,7 +138,7 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
     const interval = window.setInterval(() => {
       const now = Date.now();
 
-      if (now - lastInteractionAt >= INACTIVITY_TIMEOUT_MS) {
+      if (now - lastInteractionRef.current >= INACTIVITY_TIMEOUT_MS) {
         inactivityTimeout(now);
       }
     }, 1_000);
@@ -121,7 +146,7 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
     return () => {
       window.clearInterval(interval);
     };
-  }, [inactivityTimeout, lastInteractionAt, phase]);
+  }, [inactivityTimeout, phase]);
 
   useKeyboardInput({
     phase,
@@ -130,7 +155,6 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
     rotateWheel,
     toggleCardFace,
     addFocusedToTray,
-    resetExperience,
   });
 
   const handleDrinkClick = useCallback(
@@ -184,9 +208,7 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
             items={selectedDrinks}
             totalCount={selectedCount}
             feedback={feedback}
-            phase={phase}
             onDecrement={(drinkId, side) => decrementTrayItem(drinkId, side)}
-            onConfirm={(side) => confirmOrder(side)}
           />
           {phase === "onboarding" && <Guide step={onboardingStep} />}
         </>
@@ -204,9 +226,7 @@ function useAmbientMotion(tableRef: RefObject<HTMLElement | null>) {
         return;
       }
 
-      const reduceMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
+      const reduceMotion = reducedMotion.matches;
       const q = gsap.utils.selector(table);
 
       if (reduceMotion) {
@@ -291,17 +311,10 @@ function usePhaseGlow(tableRef: RefObject<HTMLElement | null>, phase: string) {
         return;
       }
 
-      const reduceMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
+      const reduceMotion = reducedMotion.matches;
 
       gsap.to(table, {
-        "--phase-glow":
-          phase === "orderConfirmation"
-            ? 0.54
-            : phase === "dormant"
-              ? 0.18
-              : 0.38,
+        "--phase-glow": phase === "dormant" ? 0.18 : 0.38,
         "--phase-scale": phase === "dormant" ? 0.985 : 1,
         duration: reduceMotion ? 0 : 0.72,
         ease: "power3.out",
@@ -319,7 +332,6 @@ type KeyboardInput = {
   rotateWheel: GedulgtTableStore["rotateWheel"];
   toggleCardFace: GedulgtTableStore["toggleCardFace"];
   addFocusedToTray: GedulgtTableStore["addFocusedToTray"];
-  resetExperience: GedulgtTableStore["resetExperience"];
 };
 
 function useKeyboardInput({
@@ -329,25 +341,25 @@ function useKeyboardInput({
   rotateWheel,
   toggleCardFace,
   addFocusedToTray,
-  resetExperience,
 }: KeyboardInput) {
-  const activateOr = (callback: () => void) => {
-    if (phase === "dormant") {
-      activate("near");
-      return;
-    }
+  const activateOr = useCallback(
+    (callback: () => void) => {
+      if (phase === "dormant") {
+        activate("near");
+        return;
+      }
 
-    callback();
-  };
+      callback();
+    },
+    [activate, phase],
+  );
 
   useHotkeys(
     [
       {
         hotkey: "Escape",
         callback: () => {
-          if (phase === "orderConfirmation") {
-            resetExperience();
-          } else if (phase !== "dormant") {
+          if (phase !== "dormant") {
             deactivate("near");
           }
         },
@@ -362,14 +374,7 @@ function useKeyboardInput({
       },
       {
         hotkey: "Enter",
-        callback: () =>
-          activateOr(() => {
-            if (phase === "orderConfirmation") {
-              resetExperience();
-            } else {
-              toggleCardFace("near");
-            }
-          }),
+        callback: () => activateOr(() => toggleCardFace("near")),
       },
       {
         hotkey: "Space",
