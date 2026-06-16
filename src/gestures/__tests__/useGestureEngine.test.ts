@@ -7,6 +7,8 @@ const mocks = vi.hoisted(() => {
   };
   const store = {
     rotateWheel: vi.fn(),
+    navigateOnboarding: vi.fn(),
+    addOnboardingCocktail: vi.fn(),
     toggleCardFace: vi.fn(),
     addFocusedToTray: vi.fn(),
     decrementTrayItem: vi.fn(),

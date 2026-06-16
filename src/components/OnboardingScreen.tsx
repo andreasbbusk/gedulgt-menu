@@ -1,26 +1,49 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useHotkeys } from "@tanstack/react-hotkeys";
 import { useShallow } from "zustand/react/shallow";
 import { useGestureEngine } from "../gestures/useGestureEngine";
 import { useGedulgtTableStore } from "../store/gedulgtTableStore";
+import { OnboardingAddLayer } from "./OnboardingAddLayer";
+import { OnboardingNavigateLayer } from "./OnboardingNavigateLayer";
 import { OnboardingIntro } from "./table/OnboardingIntro";
+import { usePointerInput } from "./table/usePointerInput";
 
 type OnboardingScreenProps = {
   gesturesEnabled: boolean;
 };
 
 export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
-  const { phase, activate, completeActivation } = useGedulgtTableStore(
+  const screenRef = useRef<HTMLElement | null>(null);
+  const {
+    phase,
+    onboardingNavigatePosition,
+    activate,
+    completeActivation,
+    navigateOnboarding,
+    completeOnboardingNavigation,
+    addOnboardingCocktail,
+    completeOnboardingAdd,
+  } = useGedulgtTableStore(
     useShallow((state) => ({
       phase: state.phase,
+      onboardingNavigatePosition: state.onboardingNavigatePosition,
       activate: state.activate,
       completeActivation: state.completeActivation,
+      navigateOnboarding: state.navigateOnboarding,
+      completeOnboardingNavigation: state.completeOnboardingNavigation,
+      addOnboardingCocktail: state.addOnboardingCocktail,
+      completeOnboardingAdd: state.completeOnboardingAdd,
     })),
   );
   const { videoRef } = useGestureEngine({ enabled: gesturesEnabled });
+  const pointer = usePointerInput({
+    tableRef: screenRef,
+    onAdd: addOnboardingCocktail,
+    onRotate: navigateOnboarding,
+  });
 
   useEffect(() => {
-    if (phase !== "onboardingConfirmation") {
+    if (phase !== "onboardingIntroConfirmation") {
       return;
     }
 
@@ -33,23 +56,73 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
     };
   }, [completeActivation, phase]);
 
+  useEffect(() => {
+    if (phase !== "onboardingNavigateConfirmation") {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      completeOnboardingNavigation(Date.now());
+    }, 950);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [completeOnboardingNavigation, phase]);
+
+  useEffect(() => {
+    if (phase !== "onboardingAddConfirmation") {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      completeOnboardingAdd(Date.now());
+    }, 1_350);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [completeOnboardingAdd, phase]);
+
+  const handleForward = useCallback(() => {
+    if (phase === "onboardingIntro") {
+      activate("near");
+      return;
+    }
+
+    if (phase === "onboardingNavigate") {
+      navigateOnboarding("next", "near");
+    }
+  }, [activate, navigateOnboarding, phase]);
+
+  const handleBack = useCallback(() => {
+    if (phase === "onboardingIntro") {
+      activate("near");
+      return;
+    }
+
+    if (phase === "onboardingNavigate") {
+      navigateOnboarding("previous", "near");
+    }
+  }, [activate, navigateOnboarding, phase]);
+
   useHotkeys(
     [
       {
         hotkey: "ArrowLeft",
-        callback: () => activate("near"),
+        callback: handleBack,
       },
       {
         hotkey: "ArrowRight",
-        callback: () => activate("near"),
+        callback: handleForward,
       },
       {
         hotkey: "Enter",
-        callback: () => activate("near"),
+        callback: handleForward,
       },
       {
         hotkey: "Space",
-        callback: () => activate("near"),
+        callback: handleForward,
       },
     ],
     { preventDefault: true, stopPropagation: false },
@@ -57,9 +130,11 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
 
   return (
     <section
+      ref={screenRef}
       className="onboarding-screen"
       aria-label="Gedulgt Onboarding"
       data-gestures={gesturesEnabled ? "enabled" : "disabled"}
+      {...pointer}
     >
       <video
         ref={videoRef}
@@ -69,7 +144,18 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
       >
         <track kind="captions" />
       </video>
-      <OnboardingIntro confirmed={phase === "onboardingConfirmation"} />
+      {phase === "onboardingNavigate" ||
+      phase === "onboardingNavigateConfirmation" ? (
+        <OnboardingNavigateLayer
+          position={onboardingNavigatePosition}
+          confirmed={phase === "onboardingNavigateConfirmation"}
+          onRotate={navigateOnboarding}
+        />
+      ) : phase === "onboardingAdd" || phase === "onboardingAddConfirmation" ? (
+        <OnboardingAddLayer confirmed={phase === "onboardingAddConfirmation"} />
+      ) : (
+        <OnboardingIntro confirmed={phase === "onboardingIntroConfirmation"} />
+      )}
     </section>
   );
 }

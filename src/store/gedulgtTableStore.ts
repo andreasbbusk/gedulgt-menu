@@ -10,7 +10,11 @@ import {
 export type ExperiencePhase =
   | "onboardingIntro"
   | "dormant"
-  | "onboardingConfirmation"
+  | "onboardingIntroConfirmation"
+  | "onboardingNavigate"
+  | "onboardingNavigateConfirmation"
+  | "onboardingAdd"
+  | "onboardingAddConfirmation"
   | "onboarding"
   | "browseWheel"
   | "trayFeedback";
@@ -54,6 +58,9 @@ export type GedulgtTableState = {
   selectedItems: SelectedDrinkItem[];
   onboardingCompleted: boolean;
   onboardingStep: OnboardingStep;
+  onboardingNavigatePosition: number;
+  onboardingNavigatePreviousCompleted: boolean;
+  onboardingNavigateNextCompleted: boolean;
   inputLockout: InputLockout | null;
   trayFeedback: TrayFeedback;
   lastInteractionAt: number;
@@ -62,6 +69,14 @@ export type GedulgtTableState = {
 type GedulgtTableActions = {
   activate: (side: TableSide, time?: number) => void;
   completeActivation: (time?: number) => void;
+  navigateOnboarding: (
+    direction: RotateDirection,
+    side: TableSide,
+    time?: number,
+  ) => void;
+  completeOnboardingNavigation: (time?: number) => void;
+  addOnboardingCocktail: (side: TableSide, time?: number) => void;
+  completeOnboardingAdd: (time?: number) => void;
   deactivate: (side: TableSide, time?: number) => void;
   rotateWheel: (
     direction: RotateDirection,
@@ -90,6 +105,9 @@ function getDormantState(
     cardFace: "front",
     selectedItems: [],
     onboardingStep: "browse",
+    onboardingNavigatePosition: 0,
+    onboardingNavigatePreviousCompleted: false,
+    onboardingNavigateNextCompleted: false,
     inputLockout: null,
     trayFeedback: null,
     lastInteractionAt: time,
@@ -135,7 +153,7 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
 
           if (state.phase === "onboardingIntro") {
             return {
-              phase: "onboardingConfirmation",
+              phase: "onboardingIntroConfirmation",
               focusedDrinkId:
                 state.focusedDrinkId || (GEDULGT_DRINKS[0]?.id ?? ""),
               cardFace: "front",
@@ -175,13 +193,92 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
 
       completeActivation: (time = Date.now()) => {
         set((state) => {
-          if (state.phase !== "onboardingConfirmation") {
+          if (state.phase !== "onboardingIntroConfirmation") {
+            return state;
+          }
+
+          return {
+            phase: "onboardingNavigate",
+            trayFeedback: null,
+            inputLockout: null,
+            lastInteractionAt: time,
+          };
+        });
+      },
+
+      navigateOnboarding: (direction, side, time = Date.now()) => {
+        set((state) => {
+          if (
+            state.phase !== "onboardingNavigate" ||
+            !canUseSide(state, side, time)
+          ) {
+            return state;
+          }
+
+          const offset = direction === "next" ? 1 : -1;
+          const previousCompleted =
+            state.onboardingNavigatePreviousCompleted ||
+            direction === "previous";
+          const nextCompleted =
+            state.onboardingNavigateNextCompleted || direction === "next";
+
+          return {
+            onboardingNavigatePosition:
+              (state.onboardingNavigatePosition + offset + 3) % 3,
+            onboardingNavigatePreviousCompleted: previousCompleted,
+            onboardingNavigateNextCompleted: nextCompleted,
+            phase:
+              previousCompleted && nextCompleted
+                ? "onboardingNavigateConfirmation"
+                : "onboardingNavigate",
+            inputLockout: { side, until: time + 700 },
+            lastInteractionAt: time,
+          };
+        });
+      },
+
+      completeOnboardingNavigation: (time = Date.now()) => {
+        set((state) => {
+          if (state.phase !== "onboardingNavigateConfirmation") {
+            return state;
+          }
+
+          return {
+            phase: "onboardingAdd",
+            onboardingNavigatePosition: 0,
+            onboardingNavigatePreviousCompleted: false,
+            onboardingNavigateNextCompleted: false,
+            inputLockout: null,
+            lastInteractionAt: time,
+          };
+        });
+      },
+
+      addOnboardingCocktail: (side, time = Date.now()) => {
+        set((state) => {
+          if (
+            state.phase !== "onboardingAdd" ||
+            !canUseSide(state, side, time)
+          ) {
+            return state;
+          }
+
+          return {
+            phase: "onboardingAddConfirmation",
+            inputLockout: { side, until: time + 700 },
+            lastInteractionAt: time,
+          };
+        });
+      },
+
+      completeOnboardingAdd: (time = Date.now()) => {
+        set((state) => {
+          if (state.phase !== "onboardingAddConfirmation") {
             return state;
           }
 
           return {
             phase: state.onboardingCompleted ? "browseWheel" : "onboarding",
-            trayFeedback: null,
             inputLockout: null,
             lastInteractionAt: time,
           };

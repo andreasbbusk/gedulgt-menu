@@ -18,6 +18,10 @@ export function useGestureEngine({
 } = {}) {
   const engineState = useRef<EngineState>(createEngineState());
   const rotateWheel = useGedulgtTableStore((s) => s.rotateWheel);
+  const navigateOnboarding = useGedulgtTableStore((s) => s.navigateOnboarding);
+  const addOnboardingCocktail = useGedulgtTableStore(
+    (s) => s.addOnboardingCocktail,
+  );
   const toggleCardFace = useGedulgtTableStore((s) => s.toggleCardFace);
   const addFocusedToTray = useGedulgtTableStore((s) => s.addFocusedToTray);
   const decrementTrayItem = useGedulgtTableStore((s) => s.decrementTrayItem);
@@ -70,6 +74,15 @@ export function useGestureEngine({
       }
 
       if (event.type === "SWIPE") {
+        if (phase === "onboardingNavigate") {
+          navigateOnboarding(
+            event.direction === "left" ? "previous" : "next",
+            "near",
+            now,
+          );
+          return;
+        }
+
         rotateWheel(
           event.direction === "left" ? "previous" : "next",
           "near",
@@ -84,6 +97,11 @@ export function useGestureEngine({
       }
 
       if (event.type === "SWIPE_UP") {
+        if (phase === "onboardingAdd") {
+          addOnboardingCocktail("near", now);
+          return;
+        }
+
         addFocusedToTray("near", now);
         return;
       }
@@ -94,6 +112,8 @@ export function useGestureEngine({
     },
     [
       rotateWheel,
+      navigateOnboarding,
+      addOnboardingCocktail,
       toggleCardFace,
       addFocusedToTray,
       decrementTrayItem,
