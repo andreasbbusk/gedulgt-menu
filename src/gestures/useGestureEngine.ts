@@ -57,9 +57,13 @@ export function useGestureEngine({
       const now = Date.now();
 
       if (event.type === "DOUBLE_OPEN") {
-        if (phase === "dormant") {
+        if (phase === "dormant" || phase === "onboardingIntro") {
           activate("near", now);
-        } else if (phase !== "activationSuccess") {
+        } else if (
+          phase === "onboarding" ||
+          phase === "browseWheel" ||
+          phase === "trayFeedback"
+        ) {
           deactivate("near", now);
         }
         return;

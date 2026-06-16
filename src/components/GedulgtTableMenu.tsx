@@ -13,7 +13,6 @@ import { useShallow } from "zustand/react/shallow";
 import { FEEDBACK_SETTLE_MS, cx } from "./table/utils";
 import { Dormant } from "./table/Dormant";
 import { Guide } from "./table/Guide";
-import { OnboardingIntro } from "./table/OnboardingIntro";
 import { Tray } from "./table/Tray";
 import { Wheel } from "./table/Wheel";
 import { usePointerInput } from "./table/usePointerInput";
@@ -53,7 +52,6 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
     feedback,
     lastInteractionAt,
     activate,
-    completeActivation,
     deactivate,
     rotateWheel,
     focusDrink,
@@ -73,7 +71,6 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
       feedback: state.trayFeedback,
       lastInteractionAt: state.lastInteractionAt,
       activate: state.activate,
-      completeActivation: state.completeActivation,
       deactivate: state.deactivate,
       rotateWheel: state.rotateWheel,
       focusDrink: state.focusDrink,
@@ -134,7 +131,7 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
   }, [clearTrayFeedback, feedback]);
 
   useEffect(() => {
-    if (phase === "dormant") {
+    if (!isInteractiveMenuPhase(phase)) {
       return;
     }
 
@@ -150,20 +147,6 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
       window.clearInterval(interval);
     };
   }, [inactivityTimeout, phase]);
-
-  useEffect(() => {
-    if (phase !== "activationSuccess") {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      completeActivation(Date.now());
-    }, 950);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [completeActivation, phase]);
 
   useKeyboardInput({
     phase,
@@ -213,8 +196,6 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
 
       {phase === "dormant" ? (
         <Dormant />
-      ) : phase === "activationSuccess" ? (
-        <OnboardingIntro confirmed />
       ) : (
         <>
           <Wheel
@@ -344,6 +325,14 @@ function usePhaseGlow(tableRef: RefObject<HTMLElement | null>, phase: string) {
   );
 }
 
+function isInteractiveMenuPhase(phase: ExperiencePhase) {
+  return (
+    phase === "onboarding" ||
+    phase === "browseWheel" ||
+    phase === "trayFeedback"
+  );
+}
+
 type KeyboardInput = {
   phase: ExperiencePhase;
   activate: GedulgtTableStore["activate"];
@@ -378,7 +367,7 @@ function useKeyboardInput({
       {
         hotkey: "Escape",
         callback: () => {
-          if (phase !== "dormant") {
+          if (isInteractiveMenuPhase(phase)) {
             deactivate("near");
           }
         },

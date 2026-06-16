@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { GedulgtTableMenu } from "./components/GedulgtTableMenu";
+import { OnboardingScreen } from "./components/OnboardingScreen";
 import Silk from "./components/table/Silk";
 import { useGedulgtTableStore } from "./store/gedulgtTableStore";
 
@@ -49,6 +50,8 @@ function App() {
 	const [gestureTrackingEnabled] = useState(getInitialGestureTrackingEnabled);
 	const phase = useGedulgtTableStore((s) => s.phase);
 	const silkOpacity = phase === "dormant" ? 1 : 0.5;
+	const showOnboardingScreen =
+		phase === "onboardingIntro" || phase === "onboardingConfirmation";
 
 	return (
 		<main className="tabletop-menu">
@@ -65,7 +68,11 @@ function App() {
 					rotation={0}
 				/>
 			</div>
-			<GedulgtTableMenu gesturesEnabled={gestureTrackingEnabled} />
+			{showOnboardingScreen ? (
+				<OnboardingScreen gesturesEnabled={gestureTrackingEnabled} />
+			) : (
+				<GedulgtTableMenu gesturesEnabled={gestureTrackingEnabled} />
+			)}
 		</main>
 	);
 }

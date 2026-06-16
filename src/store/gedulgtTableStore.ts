@@ -8,8 +8,9 @@ import {
 } from "../domain/menu";
 
 export type ExperiencePhase =
+  | "onboardingIntro"
   | "dormant"
-  | "activationSuccess"
+  | "onboardingConfirmation"
   | "onboarding"
   | "browseWheel"
   | "trayFeedback";
@@ -95,6 +96,23 @@ function getDormantState(
   };
 }
 
+function getInitialState(
+  time: number,
+): Omit<GedulgtTableState, "onboardingCompleted"> {
+  return {
+    ...getDormantState(time),
+    phase: "onboardingIntro",
+  };
+}
+
+function isInteractiveMenuPhase(phase: ExperiencePhase) {
+  return (
+    phase === "onboarding" ||
+    phase === "browseWheel" ||
+    phase === "trayFeedback"
+  );
+}
+
 function canUseSide(state: GedulgtTableState, side: TableSide, time: number) {
   return !(
     state.inputLockout &&
@@ -106,7 +124,7 @@ function canUseSide(state: GedulgtTableState, side: TableSide, time: number) {
 export const useGedulgtTableStore = create<GedulgtTableStore>()(
   persist(
     (set) => ({
-      ...getDormantState(Date.now()),
+      ...getInitialState(Date.now()),
       onboardingCompleted: false,
 
       activate: (side, time = Date.now()) => {
@@ -115,8 +133,36 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
             return state;
           }
 
+          if (state.phase === "onboardingIntro") {
+            return {
+              phase: "onboardingConfirmation",
+              focusedDrinkId:
+                state.focusedDrinkId || (GEDULGT_DRINKS[0]?.id ?? ""),
+              cardFace: "front",
+              trayFeedback: null,
+              inputLockout: { side, until: time + 700 },
+              lastInteractionAt: time,
+            };
+          }
+
+          if (state.phase === "dormant") {
+            return {
+              phase: state.onboardingCompleted ? "browseWheel" : "onboarding",
+              focusedDrinkId:
+                state.focusedDrinkId || (GEDULGT_DRINKS[0]?.id ?? ""),
+              cardFace: "front",
+              trayFeedback: null,
+              inputLockout: { side, until: time + 700 },
+              lastInteractionAt: time,
+            };
+          }
+
+          if (isInteractiveMenuPhase(state.phase)) {
+            return state;
+          }
+
           return {
-            phase: "activationSuccess",
+            phase: state.onboardingCompleted ? "browseWheel" : "onboarding",
             focusedDrinkId:
               state.focusedDrinkId || (GEDULGT_DRINKS[0]?.id ?? ""),
             cardFace: "front",
@@ -129,13 +175,12 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
 
       completeActivation: (time = Date.now()) => {
         set((state) => {
-          if (state.phase !== "activationSuccess") {
+          if (state.phase !== "onboardingConfirmation") {
             return state;
           }
 
           return {
-            phase: "browseWheel",
-            onboardingCompleted: true,
+            phase: state.onboardingCompleted ? "browseWheel" : "onboarding",
             trayFeedback: null,
             inputLockout: null,
             lastInteractionAt: time,
@@ -149,6 +194,10 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
             return state;
           }
 
+          if (!isInteractiveMenuPhase(state.phase)) {
+            return state;
+          }
+
           return {
             ...getDormantState(time),
             onboardingCompleted: state.onboardingCompleted,
@@ -159,8 +208,7 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
       rotateWheel: (direction, side, time = Date.now()) => {
         set((state) => {
           if (
-            state.phase === "dormant" ||
-            state.phase === "activationSuccess" ||
+            !isInteractiveMenuPhase(state.phase) ||
             !canUseSide(state, side, time)
           ) {
             return state;
@@ -189,8 +237,7 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
       focusDrink: (drinkId, side, time = Date.now()) => {
         set((state) => {
           if (
-            state.phase === "dormant" ||
-            state.phase === "activationSuccess" ||
+            !isInteractiveMenuPhase(state.phase) ||
             !isCanonicalDrink(drinkId) ||
             !canUseSide(state, side, time)
           ) {
@@ -217,8 +264,7 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
       toggleCardFace: (side, time = Date.now()) => {
         set((state) => {
           if (
-            state.phase === "dormant" ||
-            state.phase === "activationSuccess" ||
+            !isInteractiveMenuPhase(state.phase) ||
             !canUseSide(state, side, time)
           ) {
             return state;
@@ -241,8 +287,7 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
       addFocusedToTray: (side, time = Date.now()) => {
         set((state) => {
           if (
-            state.phase === "dormant" ||
-            state.phase === "activationSuccess" ||
+            !isInteractiveMenuPhase(state.phase) ||
             !canUseSide(state, side, time)
           ) {
             return state;
@@ -290,8 +335,7 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
       decrementTrayItem: (drinkId, side, time = Date.now()) => {
         set((state) => {
           if (
-            state.phase === "dormant" ||
-            state.phase === "activationSuccess" ||
+            !isInteractiveMenuPhase(state.phase) ||
             state.phase === "onboarding" ||
             !canUseSide(state, side, time)
           ) {
@@ -315,7 +359,7 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
 
       inactivityTimeout: (time = Date.now()) => {
         set((state) => {
-          if (state.phase === "dormant") {
+          if (!isInteractiveMenuPhase(state.phase)) {
             return state;
           }
 

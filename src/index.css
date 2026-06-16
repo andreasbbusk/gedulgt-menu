@@ -179,6 +179,15 @@ p {
 	display: none;
 }
 
+.onboarding-screen {
+	position: relative;
+	width: min(calc(100vw - 10px), calc(100svh - 44px), 1160px);
+	aspect-ratio: 1;
+	overflow: visible;
+	touch-action: none;
+	user-select: none;
+}
+
 .dormant-state {
 	position: absolute;
 	inset: 0;
