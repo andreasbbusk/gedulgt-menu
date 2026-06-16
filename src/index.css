@@ -63,12 +63,16 @@ p {
 	place-items: center;
 	overflow: hidden;
 	isolation: isolate;
-	background-color: hsla(95, 0%, 0%, 1);
-	background-image:
-		radial-gradient(at 88% 79%, rgb(43, 52, 83) 0px, transparent 50%),
-		radial-gradient(at 13% 9%, rgb(67, 82, 37) 0px, transparent 50%);
-	animation: gradient 13s ease infinite;
+
 	background-size: 200% 200%;
+}
+
+.silk-background {
+	position: fixed;
+	inset: 0;
+	z-index: 0;
+	overflow: hidden;
+	pointer-events: none;
 }
 
 @keyframes gradient {
@@ -171,35 +175,6 @@ p {
 	opacity: 0.24;
 }
 
-.projection-table__prism {
-	display: none;
-	inset: 18%;
-	border-radius: 50%;
-	opacity: 0.18;
-	background: conic-gradient(
-		from 0deg,
-		transparent 0 9%,
-		rgba(244, 238, 226, 0.22) 10% 11%,
-		transparent 12% 32%,
-		rgba(199, 155, 91, 0.22) 33% 34%,
-		transparent 35% 58%,
-		rgba(188, 120, 133, 0.18) 59% 60%,
-		transparent 61% 100%
-	);
-	mask-image: radial-gradient(
-		circle,
-		transparent 44%,
-		black 58%,
-		transparent 64%
-	);
-}
-
-.projection-table__prism--b {
-	inset: 29%;
-	opacity: 0.12;
-	transform: rotate(34deg);
-}
-
 .projection-table__rim {
 	display: none;
 }
@@ -210,25 +185,6 @@ p {
 	z-index: 10;
 	display: grid;
 	place-items: center;
-}
-
-.dormant-state__visual {
-	position: relative;
-	width: min(54%, 420px);
-	aspect-ratio: 1;
-	display: grid;
-	place-items: center;
-	color: var(--projected);
-}
-
-.dormant-state__mark {
-	position: relative;
-	font-size: clamp(2.7rem, 7.2vmin, 6.4rem);
-	font-weight: 400;
-	line-height: 0.9;
-	letter-spacing: 0;
-	text-transform: uppercase;
-	text-shadow: 0 0 36px rgba(244, 238, 226, 0.18);
 }
 
 .mirrored-wheel {
