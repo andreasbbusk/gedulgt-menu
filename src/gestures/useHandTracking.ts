@@ -4,11 +4,18 @@ import { projectPointToTable } from "../config/tableCalibration";
 import { classifyPose } from "./handPose";
 import type { HandPose } from "./handPose";
 
-const WASM_URL  = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
-const MODEL_URL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
-const FRAME_MS  = 1000 / 30;
+const WASM_URL =
+  "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
+const MODEL_URL =
+  "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+const FRAME_MS = 1000 / 30;
 
-export type TrackingStatus = "idle" | "requesting-permission" | "loading" | "ready" | "error";
+export type TrackingStatus =
+  | "idle"
+  | "requesting-permission"
+  | "loading"
+  | "ready"
+  | "error";
 
 export type HandData = {
   pose: HandPose;
@@ -52,9 +59,12 @@ const EMPTY_FRAME: TrackingFrame = {
 
 export function useHandTracking(
   onFrame: (frame: TrackingFrame) => void,
-  { enabled = true, mirrorX = true }: { enabled?: boolean; mirrorX?: boolean } = {},
+  {
+    enabled = true,
+    mirrorX = true,
+  }: { enabled?: boolean; mirrorX?: boolean } = {},
 ) {
-  const videoRef   = useRef<HTMLVideoElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const onFrameRef = useRef(onFrame);
 
   const [status, setStatus] = useReducer(
@@ -71,12 +81,12 @@ export function useHandTracking(
     if (!enabled) return;
 
     const video = videoRef.current;
-    let disposed      = false;
-    let raf           = 0;
+    let disposed = false;
+    let raf = 0;
     let landmarker: HandLandmarker | null = null;
-    let stream: MediaStream | null        = null;
+    let stream: MediaStream | null = null;
     let lastVideoTime = -1;
-    let lastFrameAt   = 0;
+    let lastFrameAt = 0;
 
     const detect = () => {
       if (disposed || !video || !landmarker) return;
@@ -89,7 +99,7 @@ export function useHandTracking(
         now - lastFrameAt >= FRAME_MS
       ) {
         lastVideoTime = video.currentTime;
-        lastFrameAt   = now;
+        lastFrameAt = now;
 
         const result = landmarker.detectForVideo(video, now);
         const hands: [HandData | null, HandData | null] = [null, null];
@@ -98,8 +108,8 @@ export function useHandTracking(
           const lms = result.landmarks[i] as Pt[] | undefined;
 
           if (lms && lms.length >= 21) {
-            const palmCenter     = avg(lms, [0, 5, 9, 13, 17]);
-            const palmScreenPt   = toScreenPt(palmCenter, mirrorX);
+            const palmCenter = avg(lms, [0, 5, 9, 13, 17]);
+            const palmScreenPt = toScreenPt(palmCenter, mirrorX);
             const projectedPoint = projectPointToTable(palmScreenPt) ?? null;
 
             hands[i] = { pose: classifyPose(lms), projectedPoint };
@@ -107,7 +117,7 @@ export function useHandTracking(
         }
 
         const primaryHand = hands[0];
-        const handCount   = hands.filter(Boolean).length;
+        const handCount = hands.filter(Boolean).length;
 
         if (primaryHand) {
           onFrameRef.current({
@@ -132,13 +142,20 @@ export function useHandTracking(
       setStatus("requesting-permission");
       stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: {
+          facingMode: "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
       });
 
-      if (disposed) { stream.getTracks().forEach((t) => t.stop()); return; }
+      if (disposed) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
 
-      video.srcObject   = stream;
-      video.muted       = true;
+      video.srcObject = stream;
+      video.muted = true;
       video.playsInline = true;
       await video.play();
 
@@ -152,7 +169,10 @@ export function useHandTracking(
         runningMode: "VIDEO",
       });
 
-      if (disposed) { landmarker.close(); return; }
+      if (disposed) {
+        landmarker.close();
+        return;
+      }
 
       setStatus("ready");
       detect();
@@ -169,7 +189,10 @@ export function useHandTracking(
       cancelAnimationFrame(raf);
       landmarker?.close();
       stream?.getTracks().forEach((t) => t.stop());
-      if (video) { video.pause(); video.srcObject = null; }
+      if (video) {
+        video.pause();
+        video.srcObject = null;
+      }
     };
   }, [enabled, mirrorX]);
 

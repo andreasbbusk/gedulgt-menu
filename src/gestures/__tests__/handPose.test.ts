@@ -16,12 +16,17 @@ function landmarks() {
   return Array.from({ length: 21 }, () => ({ x: 0, y: 0 }));
 }
 
-function setFinger(lm: Pt[], finger: (typeof FINGERS)[number], state: FingerState) {
-  const shapes: Record<FingerState, { mcp: number; pip: number; tip: number }> = {
-    open: { mcp: 1, pip: 1.35, tip: 1.82 },
-    curled: { mcp: 1, pip: 1.2, tip: 0.86 },
-    neutral: { mcp: 1, pip: 1.55, tip: 1.58 },
-  };
+function setFinger(
+  lm: Pt[],
+  finger: (typeof FINGERS)[number],
+  state: FingerState,
+) {
+  const shapes: Record<FingerState, { mcp: number; pip: number; tip: number }> =
+    {
+      open: { mcp: 1, pip: 1.35, tip: 1.82 },
+      curled: { mcp: 1, pip: 1.2, tip: 0.86 },
+      neutral: { mcp: 1, pip: 1.55, tip: 1.58 },
+    };
   const shape = shapes[state];
 
   lm[finger.mcp] = { x: finger.x, y: shape.mcp };

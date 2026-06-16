@@ -96,7 +96,8 @@ export function usePointerInput({
       ) {
         drag.consumed = true;
         drag.suppressClick = true;
-        suppressUntilRef.current = performance.now() + POINTER_CLICK_SUPPRESS_MS;
+        suppressUntilRef.current =
+          performance.now() + POINTER_CLICK_SUPPRESS_MS;
         onAdd(drag.side);
         return;
       }
@@ -104,7 +105,8 @@ export function usePointerInput({
       if (x >= POINTER_HORIZONTAL_SWIPE && x > y * 1.12) {
         drag.consumed = true;
         drag.suppressClick = true;
-        suppressUntilRef.current = performance.now() + POINTER_CLICK_SUPPRESS_MS;
+        suppressUntilRef.current =
+          performance.now() + POINTER_CLICK_SUPPRESS_MS;
         onRotate(getRotation(deltaX), drag.side);
       }
     },

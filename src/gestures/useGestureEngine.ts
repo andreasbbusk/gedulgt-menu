@@ -1,6 +1,10 @@
 import { useCallback, useRef } from "react";
 import { useHandTracking } from "./useHandTracking";
-import { createEngineState, defaultConfig, updateEngine } from "./gestureEngine";
+import {
+  createEngineState,
+  defaultConfig,
+  updateEngine,
+} from "./gestureEngine";
 import type { EngineInput, EngineState } from "./gestureEngine";
 import { useGedulgtTableStore } from "../store/gedulgtTableStore";
 import type { TrackingFrame } from "./useHandTracking";
@@ -12,15 +16,15 @@ export function useGestureEngine({
   enabled?: boolean;
   mirrorX?: boolean;
 } = {}) {
-  const engineState    = useRef<EngineState>(createEngineState());
-  const rotateWheel    = useGedulgtTableStore((s) => s.rotateWheel);
+  const engineState = useRef<EngineState>(createEngineState());
+  const rotateWheel = useGedulgtTableStore((s) => s.rotateWheel);
   const toggleCardFace = useGedulgtTableStore((s) => s.toggleCardFace);
   const addFocusedToTray = useGedulgtTableStore((s) => s.addFocusedToTray);
   const decrementTrayItem = useGedulgtTableStore((s) => s.decrementTrayItem);
   const focusedDrinkId = useGedulgtTableStore((s) => s.focusedDrinkId);
-  const phase          = useGedulgtTableStore((s) => s.phase);
-  const activate       = useGedulgtTableStore((s) => s.activate);
-  const deactivate     = useGedulgtTableStore((s) => s.deactivate);
+  const phase = useGedulgtTableStore((s) => s.phase);
+  const activate = useGedulgtTableStore((s) => s.activate);
+  const deactivate = useGedulgtTableStore((s) => s.deactivate);
 
   const handleFrame = useCallback(
     (frame: TrackingFrame) => {
@@ -62,7 +66,11 @@ export function useGestureEngine({
       }
 
       if (event.type === "SWIPE") {
-        rotateWheel(event.direction === "left" ? "previous" : "next", "near", now);
+        rotateWheel(
+          event.direction === "left" ? "previous" : "next",
+          "near",
+          now,
+        );
         return;
       }
 

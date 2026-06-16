@@ -14,7 +14,10 @@ export function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-export function getSide(clientY: number, element: HTMLElement | null): TableSide {
+export function getSide(
+  clientY: number,
+  element: HTMLElement | null,
+): TableSide {
   if (!element) {
     return clientY >= window.innerHeight / 2 ? "near" : "far";
   }

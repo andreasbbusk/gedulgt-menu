@@ -22,12 +22,16 @@ export function classifyPose(lm: Pt[]): HandPose {
   let extended = 0;
 
   for (const f of FINGERS) {
-    const tip = lm[f.tip], pip = lm[f.pip], mcp = lm[f.mcp];
+    const tip = lm[f.tip],
+      pip = lm[f.pip],
+      mcp = lm[f.mcp];
     if (!tip || !pip || !mcp) continue;
     const wristToTip = dist(wrist, tip);
     const wristToPip = dist(wrist, pip);
-    if (wristToTip < wristToPip * 0.98 || dist(tip, mcp) < palmSize * 0.55) curled++;
-    else if (wristToTip > wristToPip * 1.03 && dist(tip, mcp) > palmSize * 0.68) extended++;
+    if (wristToTip < wristToPip * 0.98 || dist(tip, mcp) < palmSize * 0.55)
+      curled++;
+    else if (wristToTip > wristToPip * 1.03 && dist(tip, mcp) > palmSize * 0.68)
+      extended++;
   }
 
   if (extended >= 3) return "open";

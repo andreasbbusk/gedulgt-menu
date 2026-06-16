@@ -64,7 +64,11 @@ export function Guide({ step }: { step: OnboardingStep }) {
 
   return (
     <aside ref={guideRef} className="onboarding-guide" aria-label="Onboarding">
-      <svg viewBox="0 0 160 96" className="onboarding-guide__icon" aria-hidden="true">
+      <svg
+        viewBox="0 0 160 96"
+        className="onboarding-guide__icon"
+        aria-hidden="true"
+      >
         <path
           className="onboarding-guide__trace"
           d="M24 49 C47 24, 74 24, 98 49 S132 72, 146 42"

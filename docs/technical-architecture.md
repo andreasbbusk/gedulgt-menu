@@ -101,15 +101,63 @@ Suggested actions:
 
 ```ts
 type ExperienceAction =
-  | { type: "ACTIVATE"; side: TableSide; source: InteractionSource; time: number }
-  | { type: "DEACTIVATE"; side: TableSide; source: InteractionSource; time: number }
-  | { type: "COMPLETE_ONBOARDING_STEP"; step: OnboardingStep; source: InteractionSource; time: number }
-  | { type: "ROTATE_WHEEL"; direction: "previous" | "next"; side: TableSide; source: InteractionSource; time: number }
-  | { type: "FOCUS_DRINK"; drinkId: string; side: TableSide; source: InteractionSource; time: number }
-  | { type: "TOGGLE_CARD_FACE"; side: TableSide; source: InteractionSource; time: number }
-  | { type: "ADD_FOCUSED_TO_TRAY"; side: TableSide; source: InteractionSource; time: number }
-  | { type: "DECREMENT_TRAY_ITEM"; drinkId: string; side: TableSide; source: InteractionSource; time: number }
-  | { type: "CONFIRM_ORDER"; side: TableSide; source: InteractionSource; time: number }
+  | {
+      type: "ACTIVATE";
+      side: TableSide;
+      source: InteractionSource;
+      time: number;
+    }
+  | {
+      type: "DEACTIVATE";
+      side: TableSide;
+      source: InteractionSource;
+      time: number;
+    }
+  | {
+      type: "COMPLETE_ONBOARDING_STEP";
+      step: OnboardingStep;
+      source: InteractionSource;
+      time: number;
+    }
+  | {
+      type: "ROTATE_WHEEL";
+      direction: "previous" | "next";
+      side: TableSide;
+      source: InteractionSource;
+      time: number;
+    }
+  | {
+      type: "FOCUS_DRINK";
+      drinkId: string;
+      side: TableSide;
+      source: InteractionSource;
+      time: number;
+    }
+  | {
+      type: "TOGGLE_CARD_FACE";
+      side: TableSide;
+      source: InteractionSource;
+      time: number;
+    }
+  | {
+      type: "ADD_FOCUSED_TO_TRAY";
+      side: TableSide;
+      source: InteractionSource;
+      time: number;
+    }
+  | {
+      type: "DECREMENT_TRAY_ITEM";
+      drinkId: string;
+      side: TableSide;
+      source: InteractionSource;
+      time: number;
+    }
+  | {
+      type: "CONFIRM_ORDER";
+      side: TableSide;
+      source: InteractionSource;
+      time: number;
+    }
   | { type: "RESET_EXPERIENCE"; source: InteractionSource; time: number }
   | { type: "INACTIVITY_TIMEOUT"; time: number }
   | { type: "CLEAR_TRAY_FEEDBACK"; time: number };
@@ -171,20 +219,20 @@ Do not duplicate drink objects. Slot generation should be pure derived state.
 
 Suggested component responsibilities:
 
-| Component | Responsibility |
-| --- | --- |
-| `GedulgtTableMenu` | App shell, phase routing, global timers. |
-| `ProjectionTable` | Round table field, ambient layers, edge wells. |
-| `DormantState` | Gedulgt mark, light cue, activation prompt. |
-| `OnboardingGuide` | Three-step guided interaction with hand icons and success pulses. |
-| `MirroredDrinkWheel` | Computes/renders near and far drink cards. |
-| `DrinkCard` | Front/back card faces, focused state, flip animation. |
-| `Tray` | Radial selected tokens, add feedback, confirm affordance. |
-| `OrderConfirmation` | Readable waiter-facing order summary. |
-| `GestureHelpCue` | Contextual hand icon, motion traces, success/failure pulse. |
-| `EdgeWell` | Near/far activation/deactivation hold zones. |
-| `InputAdapter` | Normalizes mouse/touch/gesture input into semantic actions. |
-| `TrackingDebugPreview` | Hidden camera/tracking preview for setup only. |
+| Component              | Responsibility                                                    |
+| ---------------------- | ----------------------------------------------------------------- |
+| `GedulgtTableMenu`     | App shell, phase routing, global timers.                          |
+| `ProjectionTable`      | Round table field, ambient layers, edge wells.                    |
+| `DormantState`         | Gedulgt mark, light cue, activation prompt.                       |
+| `OnboardingGuide`      | Three-step guided interaction with hand icons and success pulses. |
+| `MirroredDrinkWheel`   | Computes/renders near and far drink cards.                        |
+| `DrinkCard`            | Front/back card faces, focused state, flip animation.             |
+| `Tray`                 | Radial selected tokens, add feedback, confirm affordance.         |
+| `OrderConfirmation`    | Readable waiter-facing order summary.                             |
+| `GestureHelpCue`       | Contextual hand icon, motion traces, success/failure pulse.       |
+| `EdgeWell`             | Near/far activation/deactivation hold zones.                      |
+| `InputAdapter`         | Normalizes mouse/touch/gesture input into semantic actions.       |
+| `TrackingDebugPreview` | Hidden camera/tracking preview for setup only.                    |
 
 Names can change during implementation, but responsibilities should remain separated.
 
@@ -277,8 +325,8 @@ Debug tools should not influence the visual design of the guest-facing table.
 Current prices are strings such as `110,-`. For order totals, implementation should parse the leading numeric amount and format totals in the same compact DKK style:
 
 ```ts
-formatPrice(690) // "690,-"
-formatTotal(690) // "Total 690,-"
+formatPrice(690); // "690,-"
+formatTotal(690); // "Total 690,-"
 ```
 
 If future content changes price format, update parsing/formatting in one shared helper.

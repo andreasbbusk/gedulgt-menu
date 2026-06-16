@@ -41,9 +41,8 @@ vi.mock("../useHandTracking", () => ({
 }));
 
 vi.mock("../../store/gedulgtTableStore", () => ({
-  useGedulgtTableStore: (
-    selector: (state: typeof mocks.store) => unknown,
-  ) => selector(mocks.store),
+  useGedulgtTableStore: (selector: (state: typeof mocks.store) => unknown) =>
+    selector(mocks.store),
 }));
 
 import { useGestureEngine } from "../useGestureEngine";
