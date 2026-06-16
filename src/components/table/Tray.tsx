@@ -15,51 +15,28 @@ gsap.registerPlugin(useGSAP);
 
 type SelectedItems = ReturnType<typeof getSelectedDrinkItems>;
 
-// Deterministic scattered grid positions — slightly spread out, varied in x and y
-const SCATTER = [
-	{ dx: 0, dy: -10 },
-	{ dx: 74, dy: 56 },
-	{ dx: -86, dy: 42 },
-	{ dx: 16, dy: -106 },
-	{ dx: -76, dy: -76 },
-	{ dx: 91, dy: -66 },
+const TOKEN_POSITIONS = [
+	{ dx: 0, dy: -12 },
+	{ dx: 76, dy: -78 },
+	{ dx: -84, dy: -56 },
+	{ dx: 88, dy: 22 },
+	{ dx: -82, dy: 28 },
+	{ dx: 0, dy: -118 },
 ];
+const TOKEN_CLUSTER_Y_OFFSET = 24;
 
 function getTrayTokenPosition(index: number) {
 	const compact =
 		typeof window !== 'undefined' &&
 		window.matchMedia('(max-width: 760px)').matches;
-
-	if (count <= 1) {
-		const radius = compact ? 74 : 94;
-
-		return { badgeX: 0, badgeY: -28, x: 0, y: -radius };
-	}
-
-	const radius = compact
-		? count <= 2
-			? 84
-			: count <= 4
-				? 94
-				: 104
-		: count <= 2
-			? 108
-			: count <= 4
-				? 120
-				: 132;
-	const startAngle = count <= 2 ? 218 : count <= 4 ? 202 : 190;
-	const endAngle = count <= 2 ? 322 : count <= 4 ? 338 : 350;
-	const angle = startAngle + ((endAngle - startAngle) / (count - 1)) * index;
-	const radians = (angle * Math.PI) / 180;
-	const badgeDistance = compact ? 25 : 29;
 	const scale = compact ? 0.72 : 1;
-	const s = SCATTER[index % SCATTER.length];
+	const position = TOKEN_POSITIONS[index % TOKEN_POSITIONS.length];
 
 	return {
 		badgeX: 0,
 		badgeY: -24,
-		x: s.dx * scale,
-		y: s.dy * scale,
+		x: position.dx * scale,
+		y: (position.dy + TOKEN_CLUSTER_Y_OFFSET) * scale,
 	};
 }
 
@@ -78,7 +55,6 @@ export function Tray({
 	feedback,
 	phase,
 	onDecrement,
-	onConfirm,
 }: TrayProps) {
 	const trayRef = useRef<HTMLElement | null>(null);
 	const previousCountRef = useRef(totalCount);
