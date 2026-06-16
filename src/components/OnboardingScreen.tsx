@@ -6,6 +6,7 @@ import { useGedulgtTableStore } from "../store/gedulgtTableStore";
 import { OnboardingAddLayer } from "./OnboardingAddLayer";
 import { OnboardingFlipLayer } from "./OnboardingFlipLayer";
 import { OnboardingNavigateLayer } from "./OnboardingNavigateLayer";
+import { OnboardingReadyLayer } from "./OnboardingReadyLayer";
 import { OnboardingRemoveLayer } from "./OnboardingRemoveLayer";
 import { OnboardingIntro } from "./table/OnboardingIntro";
 import { usePointerInput } from "./table/usePointerInput";
@@ -32,6 +33,7 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
     completeOnboardingRemove,
     flipOnboardingCocktail,
     completeOnboardingFlip,
+    completeOnboardingReady,
   } = useGedulgtTableStore(
     useShallow((state) => ({
       phase: state.phase,
@@ -47,6 +49,7 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
       completeOnboardingRemove: state.completeOnboardingRemove,
       flipOnboardingCocktail: state.flipOnboardingCocktail,
       completeOnboardingFlip: state.completeOnboardingFlip,
+      completeOnboardingReady: state.completeOnboardingReady,
     })),
   );
   const removePointerStartRef = useRef<{
@@ -129,6 +132,20 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
       window.clearTimeout(timer);
     };
   }, [completeOnboardingFlip, phase]);
+
+  useEffect(() => {
+    if (phase !== "onboardingReady") {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      completeOnboardingReady(Date.now());
+    }, 4_000);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [completeOnboardingReady, phase]);
 
   const handleForward = useCallback(() => {
     if (phase === "onboardingIntro") {
@@ -268,6 +285,8 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
           confirmed={phase === "onboardingFlipConfirmation"}
           onFlip={flipOnboardingCocktail}
         />
+      ) : phase === "onboardingReady" ? (
+        <OnboardingReadyLayer />
       ) : (
         <OnboardingIntro confirmed={phase === "onboardingIntroConfirmation"} />
       )}

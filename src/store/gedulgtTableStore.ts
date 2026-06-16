@@ -19,6 +19,7 @@ export type ExperiencePhase =
   | "onboardingRemoveConfirmation"
   | "onboardingFlip"
   | "onboardingFlipConfirmation"
+  | "onboardingReady"
   | "onboarding"
   | "browseWheel"
   | "trayFeedback";
@@ -87,6 +88,7 @@ type GedulgtTableActions = {
   completeOnboardingRemove: (time?: number) => void;
   flipOnboardingCocktail: (side: TableSide, time?: number) => void;
   completeOnboardingFlip: (time?: number) => void;
+  completeOnboardingReady: (time?: number) => void;
   deactivate: (side: TableSide, time?: number) => void;
   rotateWheel: (
     direction: RotateDirection,
@@ -361,9 +363,24 @@ export const useGedulgtTableStore = create<GedulgtTableStore>()(
           }
 
           return {
-            phase: state.onboardingCompleted ? "browseWheel" : "onboarding",
+            phase: "onboardingReady",
             onboardingFlipSeenBack: false,
             onboardingFlipFace: "front",
+            inputLockout: null,
+            lastInteractionAt: time,
+          };
+        });
+      },
+
+      completeOnboardingReady: (time = Date.now()) => {
+        set((state) => {
+          if (state.phase !== "onboardingReady") {
+            return state;
+          }
+
+          return {
+            phase: state.onboardingCompleted ? "browseWheel" : "onboarding",
+            onboardingCompleted: true,
             inputLockout: null,
             lastInteractionAt: time,
           };

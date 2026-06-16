@@ -691,6 +691,25 @@ p {
   stroke-dashoffset: 0;
 }
 
+.onboarding-ready {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  color: var(--projected);
+  text-align: center;
+}
+
+.onboarding-ready p {
+  max-width: min(24ch, 86%);
+  font-size: clamp(1.38rem, 4.1vmin, 3.2rem);
+  font-weight: 850;
+  line-height: 0.98;
+  text-transform: uppercase;
+  text-shadow: 0 0 36px rgba(244, 238, 226, 0.18);
+}
+
 .mirrored-wheel {
   position: absolute;
   inset: 0;
