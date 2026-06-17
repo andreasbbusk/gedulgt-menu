@@ -407,9 +407,10 @@ p {
 }
 
 .onboarding-remove__instruction {
+  --remove-instruction-y: clamp(44px, 7vmin, 72px);
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: calc(52% + var(--remove-instruction-y));
   z-index: 26;
   max-width: 14ch;
   color: var(--projected);

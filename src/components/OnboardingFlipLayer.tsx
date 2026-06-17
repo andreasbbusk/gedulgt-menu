@@ -25,7 +25,7 @@ export function OnboardingFlipLayer({
         <span className="tray__feedback-pulse" />
         <span className="tray__success-outline" aria-hidden="true" />
         <div className="tray__core">
-          <p>Close your fist to flip the cocktail</p>
+          <p>Close your fist to see the ingredients of the cocktail</p>
         </div>
       </div>
 
@@ -39,7 +39,6 @@ export function OnboardingFlipLayer({
           onClick={(_, side) => onFlip(side)}
         />
       </div>
-
     </section>
   );
 }

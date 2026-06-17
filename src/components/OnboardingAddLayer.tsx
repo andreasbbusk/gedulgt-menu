@@ -18,7 +18,7 @@ export function OnboardingAddLayer({ confirmed }: OnboardingAddLayerProps) {
         <span className="tray__feedback-pulse" />
         <span className="tray__success-outline" aria-hidden="true" />
         <div className="tray__core">
-          <p>Swipe the cocktail into the tray to continue</p>
+          <p>Swipe the cocktail into the tray to order</p>
         </div>
       </div>
 
@@ -35,7 +35,6 @@ export function OnboardingAddLayer({ confirmed }: OnboardingAddLayerProps) {
       >
         <img src={getDrinkImageSrc(ONBOARDING_DRINK.imageId)} alt="" />
       </button>
-
     </section>
   );
 }

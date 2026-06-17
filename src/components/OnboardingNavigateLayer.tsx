@@ -26,7 +26,7 @@ export function OnboardingNavigateLayer({
         <span className="tray__feedback-pulse" />
         <span className="tray__success-outline" aria-hidden="true" />
         <div className="tray__core">
-          <p>Swipe left and right to continue</p>
+          <p>Swipe left and right to navigate between cocktails</p>
         </div>
       </div>
 
@@ -61,7 +61,6 @@ export function OnboardingNavigateLayer({
           );
         })}
       </div>
-
     </section>
   );
 }

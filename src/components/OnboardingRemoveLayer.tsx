@@ -23,7 +23,7 @@ export function OnboardingRemoveLayer({
       </div>
 
       <p className="onboarding-remove__instruction">
-        Swipe down to remove the cocktail
+        Swipe down to remove the cocktail from the tray
       </p>
 
       <button
