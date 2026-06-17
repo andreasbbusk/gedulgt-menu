@@ -67,19 +67,7 @@ export function OnboardingIntro({ confirmed = false }: OnboardingIntroProps) {
 				.to(q(".onboarding-intro__prompt"), {
 					autoAlpha: 0,
 					y: -8,
-				})
-				.fromTo(
-					q(".onboarding-intro__check"),
-					{ autoAlpha: 0, yPercent: -50, scale: 0.52, rotate: -12 },
-					{ autoAlpha: 1, yPercent: -50, scale: 1, rotate: 0 },
-					0.08,
-				)
-				.fromTo(
-					q(".onboarding-intro__check path"),
-					{ strokeDashoffset: 72 },
-					{ strokeDashoffset: 0, duration: reduceMotion ? 0 : 0.56 },
-					0.18,
-				);
+				});
 		},
 		{ dependencies: [confirmed], scope: rootRef },
 	);
@@ -98,15 +86,6 @@ export function OnboardingIntro({ confirmed = false }: OnboardingIntroProps) {
 						Place 2 hands to continue
 					</p>
 				</div>
-				<svg
-					className="onboarding-intro__check"
-					viewBox="0 0 64 64"
-					role="img"
-					aria-label="Confirmed"
-				>
-					<circle cx="32" cy="32" r="28" />
-					<path d="M18 33.5 27.2 42 46.5 22" pathLength="72" />
-				</svg>
 			</div>
 		</section>
 	);

@@ -247,34 +247,6 @@ p {
   text-transform: uppercase;
 }
 
-.onboarding-intro__check {
-  position: absolute;
-  left: calc(100% + clamp(22px, 5vmin, 64px));
-  top: 50%;
-  z-index: 3;
-  width: clamp(86px, 18vmin, 156px);
-  color: #57c47b;
-  filter: drop-shadow(0 0 24px rgba(87, 196, 123, 0.34));
-  opacity: 0;
-  transform: translateY(-50%);
-}
-
-.onboarding-intro__check circle {
-  fill: rgba(87, 196, 123, 0.1);
-  stroke: currentColor;
-  stroke-width: 3;
-}
-
-.onboarding-intro__check path {
-  fill: none;
-  stroke: currentColor;
-  stroke-dasharray: 72;
-  stroke-dashoffset: 72;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 6;
-}
-
 .onboarding-intro[data-confirmed="true"] .onboarding-intro__title {
   color: rgba(244, 238, 226, 0.74);
 }
@@ -1021,11 +993,5 @@ p {
   .onboarding-guide {
     right: 6%;
     width: 128px;
-  }
-
-  .onboarding-intro__check {
-    left: auto;
-    right: -22%;
-    width: clamp(72px, 16vmin, 104px);
   }
 }
