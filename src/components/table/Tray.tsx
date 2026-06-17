@@ -61,9 +61,6 @@ export function Tray({ items, totalCount, feedback, onDecrement }: TrayProps) {
         return;
       }
 
-      const reduceMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
       const tokens = tray.querySelectorAll(".tray-token");
       const pulse = tray.querySelector(".tray__feedback-pulse");
       const countChanged = previousCountRef.current !== totalCount;
@@ -75,8 +72,8 @@ export function Tray({ items, totalCount, feedback, onDecrement }: TrayProps) {
           { autoAlpha: 0.8, scale: 0.34 },
           {
             autoAlpha: 0,
-            scale: reduceMotion ? 1 : 1.8,
-            duration: reduceMotion ? 0 : 0.76,
+            scale: 1.8,
+            duration: 0.76,
             ease: "expo.out",
             overwrite: "auto",
           },
@@ -95,7 +92,7 @@ export function Tray({ items, totalCount, feedback, onDecrement }: TrayProps) {
               autoAlpha: 1,
               scale: 1,
               stagger: { amount: 0.2, from: "center" },
-              duration: reduceMotion ? 0 : 0.68,
+              duration: 0.68,
               ease: "back.out",
               overwrite: "auto",
             },
@@ -107,7 +104,7 @@ export function Tray({ items, totalCount, feedback, onDecrement }: TrayProps) {
             {
               autoAlpha: 1,
               stagger: { amount: 0.18, from: "center" },
-              duration: reduceMotion ? 0 : 0.54,
+              duration: 0.54,
               ease: "power2.out",
               overwrite: "auto",
             },

@@ -31,11 +31,6 @@ import {
   type TableSide,
 } from "../store/gedulgtTableStore";
 
-const reducedMotion =
-  typeof window !== "undefined"
-    ? window.matchMedia("(prefers-reduced-motion: reduce)")
-    : { matches: false };
-
 type GedulgtTableMenuProps = {
   gesturesEnabled: boolean;
 };
@@ -226,13 +221,7 @@ function useAmbientMotion(tableRef: RefObject<HTMLElement | null>) {
         return;
       }
 
-      const reduceMotion = reducedMotion.matches;
       const q = gsap.utils.selector(table);
-
-      if (reduceMotion) {
-        gsap.set(q(".projection-table__ambient *"), { clearProps: "all" });
-        return;
-      }
 
       const tl = gsap.timeline({ repeat: -1 });
 
@@ -311,12 +300,10 @@ function usePhaseGlow(tableRef: RefObject<HTMLElement | null>, phase: string) {
         return;
       }
 
-      const reduceMotion = reducedMotion.matches;
-
       gsap.to(table, {
         "--phase-glow": phase === "dormant" ? 0.18 : 0.38,
         "--phase-scale": phase === "dormant" ? 0.985 : 1,
-        duration: reduceMotion ? 0 : 0.72,
+        duration: 0.72,
         ease: "power3.out",
         overwrite: "auto",
       });
