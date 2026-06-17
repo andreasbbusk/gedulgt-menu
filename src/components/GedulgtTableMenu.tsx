@@ -126,7 +126,7 @@ export function GedulgtTableMenu({ gesturesEnabled }: GedulgtTableMenuProps) {
   }, [clearTrayFeedback, feedback]);
 
   useEffect(() => {
-    if (phase === "dormant") {
+    if (!isInteractiveMenuPhase(phase)) {
       return;
     }
 
@@ -312,6 +312,14 @@ function usePhaseGlow(tableRef: RefObject<HTMLElement | null>, phase: string) {
   );
 }
 
+function isInteractiveMenuPhase(phase: ExperiencePhase) {
+  return (
+    phase === "onboarding" ||
+    phase === "browseWheel" ||
+    phase === "trayFeedback"
+  );
+}
+
 type KeyboardInput = {
   phase: ExperiencePhase;
   activate: GedulgtTableStore["activate"];
@@ -346,7 +354,7 @@ function useKeyboardInput({
       {
         hotkey: "Escape",
         callback: () => {
-          if (phase !== "dormant") {
+          if (isInteractiveMenuPhase(phase)) {
             deactivate("near");
           }
         },

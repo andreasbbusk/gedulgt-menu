@@ -18,6 +18,16 @@ export function useGestureEngine({
 } = {}) {
   const engineState = useRef<EngineState>(createEngineState());
   const rotateWheel = useGedulgtTableStore((s) => s.rotateWheel);
+  const navigateOnboarding = useGedulgtTableStore((s) => s.navigateOnboarding);
+  const addOnboardingCocktail = useGedulgtTableStore(
+    (s) => s.addOnboardingCocktail,
+  );
+  const removeOnboardingCocktail = useGedulgtTableStore(
+    (s) => s.removeOnboardingCocktail,
+  );
+  const flipOnboardingCocktail = useGedulgtTableStore(
+    (s) => s.flipOnboardingCocktail,
+  );
   const toggleCardFace = useGedulgtTableStore((s) => s.toggleCardFace);
   const addFocusedToTray = useGedulgtTableStore((s) => s.addFocusedToTray);
   const decrementTrayItem = useGedulgtTableStore((s) => s.decrementTrayItem);
@@ -57,15 +67,28 @@ export function useGestureEngine({
       const now = Date.now();
 
       if (event.type === "DOUBLE_OPEN") {
-        if (phase === "dormant") {
+        if (phase === "dormant" || phase === "onboardingIntro") {
           activate("near", now);
-        } else {
+        } else if (
+          phase === "onboarding" ||
+          phase === "browseWheel" ||
+          phase === "trayFeedback"
+        ) {
           deactivate("near", now);
         }
         return;
       }
 
       if (event.type === "SWIPE") {
+        if (phase === "onboardingNavigate") {
+          navigateOnboarding(
+            event.direction === "left" ? "previous" : "next",
+            "near",
+            now,
+          );
+          return;
+        }
+
         rotateWheel(
           event.direction === "left" ? "previous" : "next",
           "near",
@@ -75,21 +98,40 @@ export function useGestureEngine({
       }
 
       if (event.type === "FIST_TAP") {
+        if (phase === "onboardingFlip") {
+          flipOnboardingCocktail("near", now);
+          return;
+        }
+
         toggleCardFace("near", now);
         return;
       }
 
       if (event.type === "SWIPE_UP") {
+        if (phase === "onboardingAdd") {
+          addOnboardingCocktail("near", now);
+          return;
+        }
+
         addFocusedToTray("near", now);
         return;
       }
 
       if (event.type === "SWIPE_DOWN") {
+        if (phase === "onboardingRemove") {
+          removeOnboardingCocktail("near", now);
+          return;
+        }
+
         decrementTrayItem(focusedDrinkId, "near", now);
       }
     },
     [
       rotateWheel,
+      navigateOnboarding,
+      addOnboardingCocktail,
+      removeOnboardingCocktail,
+      flipOnboardingCocktail,
       toggleCardFace,
       addFocusedToTray,
       decrementTrayItem,
