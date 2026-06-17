@@ -1,157 +1,158 @@
 # Gedulgt Table Menu
 
-Dette repository indeholder den tekniske prototype til eksamensprojektet i
-valgfaget **Interactive Design & Development** på Erhvervsakademi Aarhus.
+This repository contains the technical prototype for the exam project in the
+elective **Interactive Design & Development** at Business Academy Aarhus.
 
-Projektet undersøger, hvordan et klassisk drinkskort kan gentænkes som en
-projekteret, gestusbaseret bordoplevelse for cocktailbaren Gedulgt i Aarhus.
-Prototypen skal derfor ikke læses som et færdigt bestillingssystem, men som et
-proof of concept for samspillet mellem interaktionsdesign, fysisk setup,
-håndtracking og visuel feedback.
+The project explores how a traditional cocktail menu can be reimagined as a
+projected, gesture-based table experience for the cocktail bar Gedulgt in
+Aarhus. The prototype should therefore not be read as a finished ordering
+system, but as a proof of concept for the interplay between interaction design,
+physical setup, hand tracking, and visual feedback.
 
 - Prototype: <https://gedulgt-menu.vercel.app/>
-- Rapportens problemformulering: Hvordan kan vi designe og udvikle et
-  interaktivt, projekteret drinkskort til cocktailbaren Gedulgt, hvor brugeren
-  gennem gestikulering kan navigere i menuen?
+- Report problem statement: How can we design and develop an interactive,
+  projected cocktail menu for the cocktail bar Gedulgt, where the user can
+  navigate the menu through gestures?
 
-## Kort Beskrivelse
+## Short Description
 
-Gedulgt Table Menu er en browserbaseret React-prototype, som er tænkt til at
-blive vist på en bordplade via projektor. Et webcam registrerer brugerens hånd,
-MediaPipe omsætter kamera-input til hånd-landmarks, og vores egen
-gesture-engine oversætter bevægelserne til handlinger i menuen.
+Gedulgt Table Menu is a browser-based React prototype intended to be projected
+onto a tabletop. A webcam detects the user's hand, MediaPipe translates camera
+input into hand landmarks, and our custom gesture engine translates movement
+into menu actions.
 
-Brugeren kan:
+The user can:
 
-- aktivere og deaktivere menukortet med to åbne hænder
-- navigere mellem cocktails med horisontale swipes
-- vende et drinkskort med en knyttet hånd
-- tilføje en drink til den centrale Tray
-- fjerne en valgt drink igen
+- activate and deactivate the menu with two open hands
+- navigate between cocktails with horizontal swipes
+- flip a drink card with a closed fist
+- add a drink to the central Tray
+- remove a selected drink again
 
-Interfacet er designet til Gedulgts mørke, mystiske og eksklusive brandunivers.
-Det bruger et spejlet drink-hjul, en central digital serveringsbakke og en
-rolig dormant-tilstand, så menuen kan fungere som en del af bordets fysiske
-iscenesættelse.
+The interface is designed around Gedulgt's dark, mysterious, and exclusive brand
+universe. It uses a mirrored drink wheel, a central digital serving tray, and a
+calm dormant state so the menu can become part of the table's physical staging.
 
-## Kør Projektet
+## Run the Project
 
-Installer dependencies:
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-Start lokal udviklingsserver:
+Start the local development server:
 
 ```bash
 npm run dev
 ```
 
-Byg produktionsversion:
+Build the production version:
 
 ```bash
 npm run build
 ```
 
-Kør tests:
+Run tests:
 
 ```bash
 npm test
 ```
 
-Kamera-tracking er slået til som standard. Hvis prototypen skal åbnes uden at
-starte webcam/MediaPipe, kan den køres med query parameteren:
+Camera tracking is enabled by default. To open the prototype without starting
+the webcam/MediaPipe flow, use this query parameter:
 
 ```text
 ?gestures=false
 ```
 
-Eksempel lokalt:
+Local example:
 
 ```text
 http://localhost:5173/?gestures=false
 ```
 
-## Brug Med Webcam
+## Use With Webcam
 
-Prototypen fungerer fint med et almindeligt webcam. Det fulde projektor-setup er
-relevant for den fysiske oplevelse, men håndtracking og gestus-navigation kan
-afprøves direkte foran en computer med webcam.
+The prototype works well with a regular webcam. The full projector setup is
+relevant for the physical experience, but hand tracking and gesture navigation
+can be tested directly in front of a computer with a webcam.
 
-For bedst resultat:
+For the best result:
 
-- hold hånden tydeligt inden for kameraets synsfelt
-- lav én gestus ad gangen
-- flyt hånden ud af frame efter en handling, før næste handling udføres
-- før hånden ind igen, når den næste gestus skal registreres
+- keep your hand clearly inside the camera frame
+- perform one gesture at a time
+- move your hand out of frame after an action before performing the next action
+- move your hand back in when the next gesture should be detected
 
-Denne rytme gør det lettere for systemet at skelne mellem afsluttede handlinger
-og nye intentioner. Det er især vigtigt, fordi håndtracking er mindre præcist
-end mus/touch, og fordi prototypen bruger cooldowns og pose-skift til at undgå
-dobbelte eller utilsigtede registreringer.
+This rhythm makes it easier for the system to distinguish completed actions from
+new intentions. This is especially important because hand tracking is less
+precise than mouse/touch input, and because the prototype uses cooldowns and pose
+changes to avoid duplicate or unintended detections.
 
-Gestus i prototypen:
+Gestures in the prototype:
 
-- to åbne hænder: aktiver/deaktiver menukortet
-- horisontalt swipe: naviger mellem cocktails
-- knyttet hånd: vend drinkskortet
-- swipe op: tilføj den fokuserede drink til Tray
-- swipe ned: fjern den fokuserede drink fra Tray
+- two open hands: activate/deactivate the menu
+- horizontal swipe: navigate between cocktails
+- closed fist: flip the drink card
+- swipe up: add the focused drink to the Tray
+- swipe down: remove the focused drink from the Tray
 
-## Betjening Under Gennemgang
+## Controls During Review
 
-Hvis håndtracking ikke bruges, kan prototypen stadig afprøves med fallback input:
+If hand tracking is not used, the prototype can still be tested with fallback
+input:
 
-- `ArrowLeft` / `ArrowRight`: naviger mellem drinks
-- `Enter`: vend det fokuserede drinkskort
-- `Space`: tilføj den fokuserede drink til Tray
-- `Escape`: vend tilbage til dormant-tilstand
-- Mus/trackpad: klik på kort, swipe/drag i hjulet og træk ind mod midten for at
-  tilføje en drink
+- `ArrowLeft` / `ArrowRight`: navigate between drinks
+- `Enter`: flip the focused drink card
+- `Space`: add the focused drink to the Tray
+- `Escape`: return to the dormant state
+- Mouse/trackpad: click cards, swipe/drag the wheel, and drag toward the center
+  to add a drink
 
-Denne fallback gør det lettere for lærer/censor at gennemgå interfacet uden et
-fuldt kamera- og projektor-setup.
+This fallback makes it easier for teachers/examiners to review the interface
+without a full camera and projector setup.
 
-## Guide Til Rapportens Afsnit
+## Guide to the Report Sections
 
-README'en fungerer som læsevejledning fra rapportens afsnit til koden.
+This README acts as a reading guide from report sections to code.
 
-| Rapportafsnit | Relevante filer | Hvad man skal kigge efter |
+| Report section | Relevant files | What to look for |
 | --- | --- | --- |
-| Introduktion og konceptbeskrivelse | [src/App.tsx](src/App.tsx), [src/components/GedulgtTableMenu.tsx](src/components/GedulgtTableMenu.tsx) | Den samlede bordoplevelse, dormant state og hvordan menuen renderes som projekteret interface. |
-| Teori og metoder | [src/components/table/Guide.tsx](src/components/table/Guide.tsx), [src/store/gedulgtTableStore.ts](src/store/gedulgtTableStore.ts), [src/gestures/gestureEngine.ts](src/gestures/gestureEngine.ts) | Emotional Design ses i stemning og feedback, Fogg ses i simple prompts/onboarding, og Design Thinking ses i de løbende iterationer af interaktionen. |
-| Konceptudvikling og prototyping | [docs/README.md](docs/README.md), [src/components/table/Wheel.tsx](src/components/table/Wheel.tsx), [src/components/table/Tray.tsx](src/components/table/Tray.tsx), [src/components/table/usePointerInput.ts](src/components/table/usePointerInput.ts) | Hvordan konceptet er omsat til et spejlet drink-hjul, en central Tray og fallback-interaktion til test uden håndtracking. |
-| Design, branding og illustrationer | [src/index.css](src/index.css), [src/components/table](src/components/table), [src/components/table/Silk.tsx](src/components/table/Silk.tsx), [src/assets](src/assets) | Mørkt visuelt udtryk, silkebaggrund, drinkkort, spejlet hjul, Tray og stemningsskabende animation. |
-| Usability og onboarding | [src/store/gedulgtTableStore.ts](src/store/gedulgtTableStore.ts), [src/components/table/Guide.tsx](src/components/table/Guide.tsx), [src/components/table/Wheel.tsx](src/components/table/Wheel.tsx), [src/components/table/Tray.tsx](src/components/table/Tray.tsx) | Faserne dormant, onboarding, browseWheel og trayFeedback samt visuel systemstatus. |
-| Tekniske værktøjer og prototype | [package.json](package.json), [src/main.tsx](src/main.tsx), [src/App.tsx](src/App.tsx) | React, TypeScript, Vite, Zustand, GSAP og MediaPipe som teknisk grundlag. |
-| Hardware/software og kalibrering | [src/gestures/useHandTracking.ts](src/gestures/useHandTracking.ts), [src/config/tableCalibration.ts](src/config/tableCalibration.ts) | Webcam-input, MediaPipe HandLandmarker og oversættelse fra kamera-/skærmkoordinater til projektionsområde. |
-| Teknisk implementering | [src/gestures/gestureEngine.ts](src/gestures/gestureEngine.ts), [src/gestures/useGestureEngine.ts](src/gestures/useGestureEngine.ts), [src/gestures/handPose.ts](src/gestures/handPose.ts), [src/store/gedulgtTableStore.ts](src/store/gedulgtTableStore.ts) | Flowet fra hånd-landmarks til håndpose, gesture-event og state update i interfacet. |
-| Test af prototype | [src/gestures/__tests__](src/gestures/__tests__) | Unit tests af gestures, sekvenser, håndposeklassificering og mapping fra gesture-engine til menu-handlinger. |
-| Bilag og procesdokumentation | [docs/README.md](docs/README.md) | Supplerende dokumentation om oplevelseskoncept, interaktionsmodel, visuel retning og teknisk arkitektur. |
+| Introduction and concept description | [src/App.tsx](src/App.tsx), [src/components/GedulgtTableMenu.tsx](src/components/GedulgtTableMenu.tsx) | The overall table experience, dormant state, and how the menu is rendered as a projected interface. |
+| Theory and methods | [src/components/table/Guide.tsx](src/components/table/Guide.tsx), [src/store/gedulgtTableStore.ts](src/store/gedulgtTableStore.ts), [src/gestures/gestureEngine.ts](src/gestures/gestureEngine.ts) | Emotional Design appears in mood and feedback, Fogg appears in simple prompts/onboarding, and Design Thinking appears in the ongoing interaction iterations. |
+| Concept development and prototyping | [docs/README.md](docs/README.md), [src/components/table/Wheel.tsx](src/components/table/Wheel.tsx), [src/components/table/Tray.tsx](src/components/table/Tray.tsx), [src/components/table/usePointerInput.ts](src/components/table/usePointerInput.ts) | How the concept is translated into a mirrored drink wheel, a central Tray, and fallback interaction for testing without hand tracking. |
+| Design, branding, and illustrations | [src/index.css](src/index.css), [src/components/table](src/components/table), [src/components/table/Silk.tsx](src/components/table/Silk.tsx), [src/assets](src/assets) | The dark visual expression, silk background, drink cards, mirrored wheel, Tray, and mood-building animation. |
+| Usability and onboarding | [src/store/gedulgtTableStore.ts](src/store/gedulgtTableStore.ts), [src/components/table/Guide.tsx](src/components/table/Guide.tsx), [src/components/table/Wheel.tsx](src/components/table/Wheel.tsx), [src/components/table/Tray.tsx](src/components/table/Tray.tsx) | The phases dormant, onboarding, browseWheel, and trayFeedback, plus visible system status. |
+| Technical tools and prototype | [package.json](package.json), [src/main.tsx](src/main.tsx), [src/App.tsx](src/App.tsx) | React, TypeScript, Vite, Zustand, GSAP, and MediaPipe as the technical foundation. |
+| Hardware/software and calibration | [src/gestures/useHandTracking.ts](src/gestures/useHandTracking.ts), [src/config/tableCalibration.ts](src/config/tableCalibration.ts) | Webcam input, MediaPipe HandLandmarker, and translation from camera/screen coordinates to the projection area. |
+| Technical implementation | [src/gestures/gestureEngine.ts](src/gestures/gestureEngine.ts), [src/gestures/useGestureEngine.ts](src/gestures/useGestureEngine.ts), [src/gestures/handPose.ts](src/gestures/handPose.ts), [src/store/gedulgtTableStore.ts](src/store/gedulgtTableStore.ts) | The flow from hand landmarks to hand pose, gesture event, and interface state update. |
+| Prototype testing | [src/gestures/__tests__](src/gestures/__tests__) | Unit tests for gestures, sequences, hand pose classification, and mapping from gesture engine to menu actions. |
+| Appendix and process documentation | [docs/README.md](docs/README.md) | Supporting documentation about the experience concept, interaction model, visual direction, and technical architecture. |
 
-## Foreslået Læserute I Koden
+## Suggested Code Reading Path
 
-1. Start i `src/App.tsx` for at se, hvordan baggrund, global fase og
-   gesture-tracking bindes sammen.
-2. Gå videre til `src/components/GedulgtTableMenu.tsx` for at se hovedflowet:
-   dormant view, drink-hjul, Tray, onboarding og keyboard/pointer fallback.
-3. Læs `src/store/gedulgtTableStore.ts` for at forstå prototypens state machine:
-   aktivering, onboarding, navigation, kort-vending, tilføjelse til Tray og
-   inactivity timeout.
-4. Læs `src/gestures/useHandTracking.ts` og `src/gestures/handPose.ts` for at
-   se, hvordan webcam og MediaPipe omsættes til håndpose og position.
-5. Læs `src/gestures/gestureEngine.ts` og `src/gestures/useGestureEngine.ts`
-   for at se, hvordan bevægelse bliver til konkrete menu-handlinger.
-6. Afslut med testfilerne i `src/gestures/__tests__/`, som viser de vigtigste
-   tekniske antagelser omkring swipes, cooldowns, gentagne input og håndposer.
+1. Start in `src/App.tsx` to see how the background, global phase, and gesture
+   tracking are connected.
+2. Continue to `src/components/GedulgtTableMenu.tsx` to see the main flow:
+   dormant view, drink wheel, Tray, onboarding, and keyboard/pointer fallback.
+3. Read `src/store/gedulgtTableStore.ts` to understand the prototype state
+   machine: activation, onboarding, navigation, card flipping, adding to the
+   Tray, and inactivity timeout.
+4. Read `src/gestures/useHandTracking.ts` and `src/gestures/handPose.ts` to see
+   how webcam and MediaPipe input becomes hand pose and position data.
+5. Read `src/gestures/gestureEngine.ts` and `src/gestures/useGestureEngine.ts`
+   to see how movement becomes concrete menu actions.
+6. Finish with the test files in `src/gestures/__tests__/`, which show the most
+   important technical assumptions around swipes, cooldowns, repeated input, and
+   hand poses.
 
-## Arkitektur I Kort Form
+## Architecture at a Glance
 
 ```text
 Webcam
   -> MediaPipe HandLandmarker
-  -> handPose klassificering
+  -> handPose classification
   -> tableCalibration
   -> gestureEngine
   -> useGestureEngine
@@ -159,18 +160,18 @@ Webcam
   -> React interface
 ```
 
-Det vigtigste arkitektoniske valg er, at kamera-input først oversættes til
-semantiske handlinger som `SWIPE`, `FIST_TAP`, `SWIPE_UP`, `SWIPE_DOWN` og
-`DOUBLE_OPEN`. Resten af applikationen behøver derfor ikke kende til rå
-MediaPipe-landmarks, men kan reagere på tydelige interaktions-events.
+The key architectural decision is that camera input is first translated into
+semantic actions such as `SWIPE`, `FIST_TAP`, `SWIPE_UP`, `SWIPE_DOWN`, and
+`DOUBLE_OPEN`. The rest of the application does not need to know about raw
+MediaPipe landmarks, and can instead react to clear interaction events.
 
-## Afgrænsning
+## Scope
 
-Prototypen indeholder ikke backend, betaling, lagerstatus eller integration med
-et reelt kassesystem. Den er afgrænset til den oplevelse og de interaktioner,
-rapporten undersøger: et projekteret drinkskort, gestusbaseret navigation,
-visuel feedback og teknisk test af inputmetoden.
+The prototype does not include a backend, payment flow, inventory status, or
+integration with a real point-of-sale system. It is scoped to the experience and
+interactions explored in the report: a projected cocktail menu, gesture-based
+navigation, visual feedback, and technical testing of the input method.
 
-Den fysiske opsætning med projektor og webcam kræver kalibrering i praksis.
-Standardkalibreringen ligger i `src/config/tableCalibration.ts` og fungerer som
-udgangspunkt for at matche kameraets synsfelt med projektionsområdet.
+The physical setup with projector and webcam requires practical calibration. The
+default calibration lives in `src/config/tableCalibration.ts` and acts as a
+starting point for matching the camera's field of view with the projection area.
