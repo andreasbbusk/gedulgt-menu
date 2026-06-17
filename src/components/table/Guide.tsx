@@ -15,13 +15,10 @@ export function Guide({ step }: { step: OnboardingStep }) {
         return;
       }
 
-      const reduceMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
       const q = gsap.utils.selector(guide);
       const tl = gsap.timeline({
         defaults: {
-          duration: reduceMotion ? 0 : 0.72,
+          duration: 0.72,
           ease: "power3.out",
         },
       });
@@ -38,7 +35,7 @@ export function Guide({ step }: { step: OnboardingStep }) {
             strokeDashoffset: 0,
             autoAlpha: 1,
             stagger: 0.08,
-            duration: reduceMotion ? 0 : 0.92,
+            duration: 0.92,
             ease: "power2.inOut",
           },
           0.08,
@@ -49,9 +46,9 @@ export function Guide({ step }: { step: OnboardingStep }) {
           {
             x: step === "browse" ? 18 : 0,
             y: step === "add" ? 22 : 0,
-            repeat: reduceMotion ? 0 : -1,
+            repeat: -1,
             yoyo: true,
-            duration: reduceMotion ? 0 : 1.2,
+            duration: 1.2,
             ease: "sine.inOut",
           },
           0.2,

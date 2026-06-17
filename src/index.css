@@ -981,32 +981,6 @@ p {
 		calc(-50% + var(--badge-y))
 	); */
 }
-
-.tray__confirm {
-  position: absolute;
-  left: 50%;
-  bottom: 25px;
-  z-index: 4;
-  min-width: 148px;
-  min-height: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid rgba(244, 238, 226, 0.16);
-  border-radius: 8px;
-  color: var(--projected);
-  background: rgba(8, 10, 9, 0.76);
-  cursor: default;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(-50%);
-}
-
-.tray--populated .tray__confirm {
-  opacity: 1;
-}
-
 .tray__confirm span,
 .tray__confirm strong {
   font-size: clamp(0.64rem, 1.05vmin, 0.76rem);

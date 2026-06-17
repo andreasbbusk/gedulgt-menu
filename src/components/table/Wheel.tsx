@@ -47,9 +47,6 @@ export const Wheel = memo(function Wheel({
         return;
       }
 
-      const reduceMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
       const rect = wheel.getBoundingClientRect();
       const diameter = Math.max(320, Math.min(rect.width, rect.height));
       const compact = rect.width < 620;
@@ -59,7 +56,7 @@ export const Wheel = memo(function Wheel({
       );
       const tl = gsap.timeline({
         defaults: {
-          duration: reduceMotion ? 0 : 0.98,
+          duration: 0.98,
           ease: "expo.inOut",
         },
       });
