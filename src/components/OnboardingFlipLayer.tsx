@@ -23,6 +23,7 @@ export function OnboardingFlipLayer({
     >
       <div className="tray onboarding-flip__tray" aria-label="Instruction">
         <span className="tray__feedback-pulse" />
+        <span className="tray__success-outline" aria-hidden="true" />
         <div className="tray__core">
           <p>Close your fist to flip the cocktail</p>
         </div>
@@ -39,15 +40,6 @@ export function OnboardingFlipLayer({
         />
       </div>
 
-      <svg
-        className="onboarding-flip__check"
-        viewBox="0 0 64 64"
-        role="img"
-        aria-label="Confirmed"
-      >
-        <circle cx="32" cy="32" r="28" />
-        <path d="M18 33.5 27.2 42 46.5 22" pathLength="72" />
-      </svg>
     </section>
   );
 }

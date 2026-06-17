@@ -19,6 +19,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+@property --tray-success-sweep {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -344,47 +350,6 @@ p {
   z-index: 3;
 }
 
-.onboarding-navigate__check {
-  position: absolute;
-  left: calc(50% + clamp(178px, 28vmin, 292px));
-  top: 50%;
-  z-index: 12;
-  width: clamp(86px, 18vmin, 156px);
-  color: #57c47b;
-  filter: drop-shadow(0 0 24px rgba(87, 196, 123, 0.34));
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.52) rotate(-12deg);
-  transition:
-    opacity 420ms ease,
-    transform 420ms cubic-bezier(0.68, -0.15, 0.265, 1.15);
-}
-
-.onboarding-navigate__check circle {
-  fill: rgba(87, 196, 123, 0.1);
-  stroke: currentColor;
-  stroke-width: 3;
-}
-
-.onboarding-navigate__check path {
-  fill: none;
-  stroke: currentColor;
-  stroke-dasharray: 72;
-  stroke-dashoffset: 72;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 6;
-  transition: stroke-dashoffset 560ms ease 120ms;
-}
-
-.onboarding-navigate[data-confirmed="true"] .onboarding-navigate__check {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1) rotate(0deg);
-}
-
-.onboarding-navigate[data-confirmed="true"] .onboarding-navigate__check path {
-  stroke-dashoffset: 0;
-}
-
 .onboarding-add {
   position: absolute;
   inset: 0;
@@ -441,38 +406,6 @@ p {
   pointer-events: none;
 }
 
-.onboarding-add__check {
-  position: absolute;
-  left: calc(50% + clamp(178px, 28vmin, 292px));
-  top: 50%;
-  z-index: 12;
-  width: clamp(86px, 18vmin, 156px);
-  color: #57c47b;
-  filter: drop-shadow(0 0 24px rgba(87, 196, 123, 0.34));
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.52) rotate(-12deg);
-  transition:
-    opacity 420ms ease 680ms,
-    transform 420ms cubic-bezier(0.68, -0.15, 0.265, 1.15) 680ms;
-}
-
-.onboarding-add__check circle {
-  fill: rgba(87, 196, 123, 0.1);
-  stroke: currentColor;
-  stroke-width: 3;
-}
-
-.onboarding-add__check path {
-  fill: none;
-  stroke: currentColor;
-  stroke-dasharray: 72;
-  stroke-dashoffset: 72;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 6;
-  transition: stroke-dashoffset 560ms ease 800ms;
-}
-
 .onboarding-add__drink--in-tray {
   z-index: 24;
   cursor: default;
@@ -482,15 +415,6 @@ p {
 
 .onboarding-add[data-confirmed="true"] .onboarding-add__tray p {
   opacity: 0;
-}
-
-.onboarding-add[data-confirmed="true"] .onboarding-add__check {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1) rotate(0deg);
-}
-
-.onboarding-add[data-confirmed="true"] .onboarding-add__check path {
-  stroke-dashoffset: 0;
 }
 
 .onboarding-remove {
@@ -556,49 +480,8 @@ p {
     scale(0.86);
 }
 
-.onboarding-remove__check {
-  position: absolute;
-  left: calc(50% + clamp(178px, 28vmin, 292px));
-  top: 50%;
-  z-index: 12;
-  width: clamp(86px, 18vmin, 156px);
-  color: #57c47b;
-  filter: drop-shadow(0 0 24px rgba(87, 196, 123, 0.34));
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.52) rotate(-12deg);
-  transition:
-    opacity 420ms ease 520ms,
-    transform 420ms cubic-bezier(0.68, -0.15, 0.265, 1.15) 520ms;
-}
-
-.onboarding-remove__check circle {
-  fill: rgba(87, 196, 123, 0.1);
-  stroke: currentColor;
-  stroke-width: 3;
-}
-
-.onboarding-remove__check path {
-  fill: none;
-  stroke: currentColor;
-  stroke-dasharray: 72;
-  stroke-dashoffset: 72;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 6;
-  transition: stroke-dashoffset 560ms ease 640ms;
-}
-
 .onboarding-remove[data-confirmed="true"] .onboarding-remove__tray p {
   opacity: 0;
-}
-
-.onboarding-remove[data-confirmed="true"] .onboarding-remove__check {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1) rotate(0deg);
-}
-
-.onboarding-remove[data-confirmed="true"] .onboarding-remove__check path {
-  stroke-dashoffset: 0;
 }
 
 .onboarding-flip {
@@ -646,49 +529,8 @@ p {
   display: none;
 }
 
-.onboarding-flip__check {
-  position: absolute;
-  left: calc(50% + clamp(178px, 28vmin, 292px));
-  top: 50%;
-  z-index: 12;
-  width: clamp(86px, 18vmin, 156px);
-  color: #57c47b;
-  filter: drop-shadow(0 0 24px rgba(87, 196, 123, 0.34));
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.52) rotate(-12deg);
-  transition:
-    opacity 420ms ease,
-    transform 420ms cubic-bezier(0.68, -0.15, 0.265, 1.15);
-}
-
-.onboarding-flip__check circle {
-  fill: rgba(87, 196, 123, 0.1);
-  stroke: currentColor;
-  stroke-width: 3;
-}
-
-.onboarding-flip__check path {
-  fill: none;
-  stroke: currentColor;
-  stroke-dasharray: 72;
-  stroke-dashoffset: 72;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 6;
-  transition: stroke-dashoffset 560ms ease 120ms;
-}
-
 .onboarding-flip[data-confirmed="true"] .onboarding-flip__tray p {
   opacity: 0;
-}
-
-.onboarding-flip[data-confirmed="true"] .onboarding-flip__check {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1) rotate(0deg);
-}
-
-.onboarding-flip[data-confirmed="true"] .onboarding-flip__check path {
-  stroke-dashoffset: 0;
 }
 
 .onboarding-ready {
@@ -914,6 +756,120 @@ p {
   border: 1px solid color-mix(in srgb, var(--drink-accent) 18%, transparent);
   border-radius: 50%;
   opacity: 0;
+}
+
+.tray__success-outline {
+  --outline-delay: 0ms;
+  position: absolute;
+  inset: 6.5%;
+  z-index: 3;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.985);
+  transition:
+    opacity 260ms ease var(--outline-delay),
+    transform 680ms cubic-bezier(0.2, 0.84, 0.26, 1) var(--outline-delay);
+}
+
+.tray__success-outline::before,
+.tray__success-outline::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+}
+
+.tray__success-outline::before {
+  --tray-success-sweep: 0deg;
+  background: conic-gradient(
+    from -92deg,
+    #6cf08b 0deg,
+    #6cf08b var(--tray-success-sweep),
+    transparent var(--tray-success-sweep)
+  );
+  filter: drop-shadow(0 0 10px rgba(108, 240, 139, 0.42));
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 3px),
+    #000 calc(100% - 2px)
+  );
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 3px),
+    #000 calc(100% - 2px)
+  );
+}
+
+.tray__success-outline::after {
+  inset: -14%;
+  border: clamp(12px, 2.4vmin, 24px) solid rgba(229, 239, 225, 0.52);
+  filter: blur(7px);
+  transform: scale(0.96);
+}
+
+.onboarding-navigate[data-confirmed="true"] .tray__success-outline,
+.onboarding-add[data-confirmed="true"] .tray__success-outline,
+.onboarding-remove[data-confirmed="true"] .tray__success-outline,
+.onboarding-flip[data-confirmed="true"] .tray__success-outline {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.onboarding-navigate[data-confirmed="true"] .tray__success-outline::before,
+.onboarding-add[data-confirmed="true"] .tray__success-outline::before,
+.onboarding-remove[data-confirmed="true"] .tray__success-outline::before,
+.onboarding-flip[data-confirmed="true"] .tray__success-outline::before {
+  animation: tray-success-draw 720ms cubic-bezier(0.24, 0.84, 0.28, 1)
+    var(--outline-delay) forwards;
+}
+
+.onboarding-navigate[data-confirmed="true"] .tray__success-outline::after,
+.onboarding-add[data-confirmed="true"] .tray__success-outline::after,
+.onboarding-remove[data-confirmed="true"] .tray__success-outline::after,
+.onboarding-flip[data-confirmed="true"] .tray__success-outline::after {
+  animation: tray-success-halo 820ms ease-out var(--outline-delay) forwards;
+}
+
+.onboarding-add .tray__success-outline {
+  --outline-delay: 520ms;
+}
+
+.onboarding-remove .tray__success-outline {
+  --outline-delay: 420ms;
+}
+
+@keyframes tray-success-draw {
+  0% {
+    --tray-success-sweep: 0deg;
+    opacity: 0;
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  100% {
+    --tray-success-sweep: 360deg;
+    opacity: 1;
+  }
+}
+
+@keyframes tray-success-halo {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  32% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.82;
+    transform: scale(1);
+  }
 }
 
 .tray__core {

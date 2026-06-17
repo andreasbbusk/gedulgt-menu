@@ -16,6 +16,7 @@ export function OnboardingAddLayer({ confirmed }: OnboardingAddLayerProps) {
     >
       <div className="tray onboarding-add__tray" aria-label="Instruction">
         <span className="tray__feedback-pulse" />
+        <span className="tray__success-outline" aria-hidden="true" />
         <div className="tray__core">
           <p>Swipe the cocktail into the tray to continue</p>
         </div>
@@ -35,15 +36,6 @@ export function OnboardingAddLayer({ confirmed }: OnboardingAddLayerProps) {
         <img src={getDrinkImageSrc(ONBOARDING_DRINK.imageId)} alt="" />
       </button>
 
-      <svg
-        className="onboarding-add__check"
-        viewBox="0 0 64 64"
-        role="img"
-        aria-label="Confirmed"
-      >
-        <circle cx="32" cy="32" r="28" />
-        <path d="M18 33.5 27.2 42 46.5 22" pathLength="72" />
-      </svg>
     </section>
   );
 }
