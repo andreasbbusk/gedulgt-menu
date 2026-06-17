@@ -403,19 +403,23 @@ p {
 }
 
 .onboarding-remove__tray .tray__core {
-  display: grid;
-  place-items: center;
   padding: clamp(28px, 4.6vmin, 48px);
-  text-align: center;
 }
 
-.onboarding-remove__tray p {
+.onboarding-remove__instruction {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 26;
   max-width: 14ch;
   color: var(--projected);
   font-size: clamp(0.82rem, 1.58vmin, 1.06rem);
   font-weight: 850;
   line-height: 1.02;
+  text-align: center;
   text-transform: uppercase;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
   transition: opacity 260ms ease;
 }
 
@@ -452,7 +456,7 @@ p {
     scale(0.86);
 }
 
-.onboarding-remove[data-confirmed="true"] .onboarding-remove__tray p {
+.onboarding-remove[data-confirmed="true"] .onboarding-remove__instruction {
   opacity: 0;
 }
 

@@ -19,10 +19,12 @@ export function OnboardingRemoveLayer({
       <div className="tray onboarding-remove__tray" aria-label="Instruction">
         <span className="tray__feedback-pulse" />
         <span className="tray__success-outline" aria-hidden="true" />
-        <div className="tray__core">
-          <p>Swipe down to remove the cocktail</p>
-        </div>
+        <div className="tray__core" />
       </div>
+
+      <p className="onboarding-remove__instruction">
+        Swipe down to remove the cocktail
+      </p>
 
       <button
         type="button"
@@ -37,7 +39,6 @@ export function OnboardingRemoveLayer({
       >
         <img src={getDrinkImageSrc(ONBOARDING_DRINK.imageId)} alt="" />
       </button>
-
     </section>
   );
 }
