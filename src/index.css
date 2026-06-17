@@ -224,7 +224,7 @@ p {
   position: relative;
   z-index: 2;
   display: grid;
-  gap: 14px;
+  gap: clamp(12px, 2vmin, 22px);
   justify-items: center;
   max-width: min(92%, 520px);
 }
@@ -245,6 +245,17 @@ p {
   font-weight: 800;
   line-height: 1.08;
   text-transform: uppercase;
+}
+
+.onboarding-intro__gesture {
+  display: block;
+  width: clamp(152px, 24vmin, 240px);
+  max-width: 78%;
+  height: auto;
+  opacity: 0;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.3));
+  pointer-events: none;
 }
 
 .onboarding-intro[data-confirmed="true"] .onboarding-intro__title {

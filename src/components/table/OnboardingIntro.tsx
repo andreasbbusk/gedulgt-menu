@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import twoHandsGesture from "../../assets/gestures/two_hands.gif";
 
 type OnboardingIntroProps = {
 	confirmed?: boolean;
@@ -39,6 +40,12 @@ export function OnboardingIntro({ confirmed = false }: OnboardingIntroProps) {
 					{ autoAlpha: 0, y: 12 },
 					{ autoAlpha: 1, y: 0 },
 					0.12,
+				)
+				.fromTo(
+					q(".onboarding-intro__gesture"),
+					{ autoAlpha: 0, y: 12, scale: 0.96 },
+					{ autoAlpha: 1, y: 0, scale: 1 },
+					0.2,
 				);
 		},
 		{ scope: rootRef },
@@ -67,7 +74,15 @@ export function OnboardingIntro({ confirmed = false }: OnboardingIntroProps) {
 				.to(q(".onboarding-intro__prompt"), {
 					autoAlpha: 0,
 					y: -8,
-				});
+				})
+				.to(
+					q(".onboarding-intro__gesture"),
+					{
+						autoAlpha: 0,
+						y: -8,
+					},
+					0
+				);
 		},
 		{ dependencies: [confirmed], scope: rootRef },
 	);
@@ -85,6 +100,12 @@ export function OnboardingIntro({ confirmed = false }: OnboardingIntroProps) {
 					<p className="onboarding-intro__prompt">
 						Place 2 hands to continue
 					</p>
+					<img
+						className="onboarding-intro__gesture"
+						src={twoHandsGesture}
+						alt=""
+						aria-hidden="true"
+					/>
 				</div>
 			</div>
 		</section>
