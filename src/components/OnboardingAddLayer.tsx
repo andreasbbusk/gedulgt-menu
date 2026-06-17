@@ -1,3 +1,4 @@
+import swipeUpGesture from "../assets/gestures/swipe_up.gif";
 import { GEDULGT_DRINKS } from "../data/gedulgtDrinks";
 import { getDrinkImageSrc } from "./table/drinkAssets";
 
@@ -21,6 +22,13 @@ export function OnboardingAddLayer({ confirmed }: OnboardingAddLayerProps) {
           <p>Swipe the cocktail into the tray to order</p>
         </div>
       </div>
+
+      <img
+        className="onboarding-add__gesture"
+        src={swipeUpGesture}
+        alt=""
+        aria-hidden="true"
+      />
 
       <button
         type="button"

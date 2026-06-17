@@ -212,7 +212,7 @@ p {
 
 .onboarding-intro__visual {
   position: relative;
-  width: min(54%, 420px);
+  width: min(70%, 640px);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -291,6 +291,27 @@ p {
   text-transform: uppercase;
 }
 
+.onboarding-navigate__gesture {
+  position: absolute;
+  left: calc(50% + clamp(150px, 25vmin, 260px));
+  top: 50%;
+  z-index: 7;
+  width: clamp(132px, 20vmin, 220px);
+  height: auto;
+  opacity: 0.92;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition:
+    opacity 260ms ease,
+    transform 420ms ease;
+}
+
+.onboarding-navigate[data-confirmed="true"] .onboarding-navigate__gesture {
+  opacity: 0;
+  transform: translateY(calc(-50% - 8px));
+}
+
 .onboarding-navigate__drinks {
   position: absolute;
   inset: 0;
@@ -361,6 +382,27 @@ p {
   line-height: 1.02;
   text-transform: uppercase;
   transition: opacity 260ms ease;
+}
+
+.onboarding-add__gesture {
+  position: absolute;
+  left: calc(50% + clamp(150px, 25vmin, 260px));
+  top: 50%;
+  z-index: 7;
+  width: clamp(132px, 20vmin, 220px);
+  height: auto;
+  opacity: 0.92;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition:
+    opacity 260ms ease,
+    transform 420ms ease;
+}
+
+.onboarding-add[data-confirmed="true"] .onboarding-add__gesture {
+  opacity: 0;
+  transform: translateY(calc(-50% - 8px));
 }
 
 .onboarding-add__drink {
@@ -435,6 +477,27 @@ p {
   transition: opacity 260ms ease;
 }
 
+.onboarding-remove__gesture {
+  position: absolute;
+  left: calc(50% + clamp(150px, 25vmin, 260px));
+  top: 50%;
+  z-index: 7;
+  width: clamp(132px, 20vmin, 220px);
+  height: auto;
+  opacity: 0.92;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition:
+    opacity 260ms ease,
+    transform 420ms ease;
+}
+
+.onboarding-remove[data-confirmed="true"] .onboarding-remove__gesture {
+  opacity: 0;
+  transform: translateY(calc(-50% - 8px));
+}
+
 .onboarding-remove__drink {
   position: absolute;
   left: 50%;
@@ -500,6 +563,27 @@ p {
   line-height: 1.02;
   text-transform: uppercase;
   transition: opacity 260ms ease;
+}
+
+.onboarding-flip__gesture {
+  position: absolute;
+  left: calc(50% + clamp(150px, 25vmin, 260px));
+  top: 50%;
+  z-index: 7;
+  width: clamp(132px, 20vmin, 220px);
+  height: auto;
+  opacity: 0.92;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition:
+    opacity 260ms ease,
+    transform 420ms ease;
+}
+
+.onboarding-flip[data-confirmed="true"] .onboarding-flip__gesture {
+  opacity: 0;
+  transform: translateY(calc(-50% - 8px));
 }
 
 .onboarding-flip__card {

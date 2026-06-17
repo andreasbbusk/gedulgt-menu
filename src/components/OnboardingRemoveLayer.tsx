@@ -1,3 +1,4 @@
+import swipeDownGesture from "../assets/gestures/swipe_down.gif";
 import { GEDULGT_DRINKS } from "../data/gedulgtDrinks";
 import { getDrinkImageSrc } from "./table/drinkAssets";
 
@@ -25,6 +26,13 @@ export function OnboardingRemoveLayer({
       <p className="onboarding-remove__instruction">
         Swipe down to remove the cocktail from the tray
       </p>
+
+      <img
+        className="onboarding-remove__gesture"
+        src={swipeDownGesture}
+        alt=""
+        aria-hidden="true"
+      />
 
       <button
         type="button"

@@ -22,6 +22,8 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
   const {
     phase,
     onboardingNavigatePosition,
+    onboardingNavigatePreviousCompleted,
+    onboardingNavigateNextCompleted,
     onboardingFlipFace,
     activate,
     completeActivation,
@@ -38,6 +40,9 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
     useShallow((state) => ({
       phase: state.phase,
       onboardingNavigatePosition: state.onboardingNavigatePosition,
+      onboardingNavigatePreviousCompleted:
+        state.onboardingNavigatePreviousCompleted,
+      onboardingNavigateNextCompleted: state.onboardingNavigateNextCompleted,
       onboardingFlipFace: state.onboardingFlipFace,
       activate: state.activate,
       completeActivation: state.completeActivation,
@@ -269,6 +274,8 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
         <OnboardingNavigateLayer
           position={onboardingNavigatePosition}
           confirmed={phase === "onboardingNavigateConfirmation"}
+          previousCompleted={onboardingNavigatePreviousCompleted}
+          nextCompleted={onboardingNavigateNextCompleted}
           onRotate={navigateOnboarding}
         />
       ) : phase === "onboardingAdd" || phase === "onboardingAddConfirmation" ? (

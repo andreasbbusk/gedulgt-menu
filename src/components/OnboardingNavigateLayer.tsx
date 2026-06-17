@@ -1,4 +1,6 @@
 import type { CSSProperties } from "react";
+import swipeLeftGesture from "../assets/gestures/swipe_left.gif";
+import swipeRightGesture from "../assets/gestures/swipe_right.gif";
 import { GEDULGT_DRINKS } from "../data/gedulgtDrinks";
 import type { RotateDirection, TableSide } from "../store/gedulgtTableStore";
 import { getDrinkImageSrc } from "./table/drinkAssets";
@@ -6,6 +8,8 @@ import { getDrinkImageSrc } from "./table/drinkAssets";
 type OnboardingNavigateLayerProps = {
   position: number;
   confirmed: boolean;
+  previousCompleted: boolean;
+  nextCompleted: boolean;
   onRotate: (direction: RotateDirection, side: TableSide) => void;
 };
 
@@ -14,8 +18,13 @@ const ONBOARDING_DRINKS = GEDULGT_DRINKS.slice(0, 3);
 export function OnboardingNavigateLayer({
   position,
   confirmed,
+  previousCompleted,
+  nextCompleted,
   onRotate,
 }: OnboardingNavigateLayerProps) {
+  const gestureSrc =
+    previousCompleted || nextCompleted ? swipeRightGesture : swipeLeftGesture;
+
   return (
     <section
       className="onboarding-navigate"
@@ -29,6 +38,13 @@ export function OnboardingNavigateLayer({
           <p>Swipe left and right to navigate between cocktails</p>
         </div>
       </div>
+
+      <img
+        className="onboarding-navigate__gesture"
+        src={gestureSrc}
+        alt=""
+        aria-hidden="true"
+      />
 
       <div className="onboarding-navigate__drinks" aria-label="Cocktails">
         {ONBOARDING_DRINKS.map((drink, index) => {

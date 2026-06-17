@@ -1,3 +1,4 @@
+import fistTapGesture from "../assets/gestures/fist_tab.gif";
 import { GEDULGT_DRINKS } from "../data/gedulgtDrinks";
 import type { CardFace, TableSide } from "../store/gedulgtTableStore";
 import { Card } from "./table/Card";
@@ -28,6 +29,13 @@ export function OnboardingFlipLayer({
           <p>Close your fist to see the ingredients of the cocktail</p>
         </div>
       </div>
+
+      <img
+        className="onboarding-flip__gesture"
+        src={fistTapGesture}
+        alt=""
+        aria-hidden="true"
+      />
 
       <div className="onboarding-flip__card">
         <Card
