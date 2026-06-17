@@ -22,8 +22,10 @@ export function OnboardingNavigateLayer({
   nextCompleted,
   onRotate,
 }: OnboardingNavigateLayerProps) {
-  const gestureSrc =
-    previousCompleted || nextCompleted ? swipeRightGesture : swipeLeftGesture;
+  const hasCompletedFirstGesture = previousCompleted || nextCompleted;
+  const gestureSrc = hasCompletedFirstGesture
+    ? swipeRightGesture
+    : swipeLeftGesture;
 
   return (
     <section
@@ -41,6 +43,7 @@ export function OnboardingNavigateLayer({
 
       <img
         className="onboarding-navigate__gesture"
+        data-side={hasCompletedFirstGesture ? "left" : "right"}
         src={gestureSrc}
         alt=""
         aria-hidden="true"
