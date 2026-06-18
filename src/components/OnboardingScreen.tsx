@@ -1,8 +1,23 @@
-import { useCallback, useEffect, useRef, type PointerEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  type PointerEvent,
+  type ReactNode,
+} from "react";
 import { useHotkeys } from "@tanstack/react-hotkeys";
 import { useShallow } from "zustand/react/shallow";
 import { useGestureEngine } from "../gestures/useGestureEngine";
 import { useGedulgtTableStore } from "../store/gedulgtTableStore";
+import type {
+  CardFace,
+  ExperiencePhase,
+  RotateDirection,
+  TableSide,
+} from "../store/gedulgtTableStore";
 import { OnboardingAddLayer } from "./OnboardingAddLayer";
 import { OnboardingFlipLayer } from "./OnboardingFlipLayer";
 import { OnboardingNavigateLayer } from "./OnboardingNavigateLayer";
@@ -12,6 +27,44 @@ import { OnboardingIntro } from "./table/OnboardingIntro";
 import { usePointerInput } from "./table/usePointerInput";
 
 const ONBOARDING_REMOVE_SWIPE_DISTANCE = 94;
+const ONBOARDING_STEP_TRANSITION_MS = 620;
+
+type OnboardingLayerKey =
+  | "intro"
+  | "navigate"
+  | "add"
+  | "remove"
+  | "flip"
+  | "ready";
+
+type OnboardingLayer = {
+  key: OnboardingLayerKey;
+  node: ReactNode;
+};
+
+type OnboardingLayerTransitionState = {
+  activeLayer: OnboardingLayer;
+  exitingLayer: OnboardingLayer | null;
+};
+
+type OnboardingLayerTransitionAction =
+  | { type: "refresh"; layer: OnboardingLayer }
+  | {
+      type: "start";
+      layer: OnboardingLayer;
+      previousLayer: OnboardingLayer;
+    }
+  | { type: "finish"; exitingKey: OnboardingLayerKey };
+
+type OnboardingLayerOptions = {
+  phase: ExperiencePhase;
+  onboardingNavigatePosition: number;
+  onboardingNavigatePreviousCompleted: boolean;
+  onboardingNavigateNextCompleted: boolean;
+  onboardingFlipFace: CardFace;
+  navigateOnboarding: (direction: RotateDirection, side: TableSide) => void;
+  flipOnboardingCocktail: (side: TableSide) => void;
+};
 
 type OnboardingScreenProps = {
   gesturesEnabled: boolean;
@@ -61,11 +114,36 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
     pointerId: number;
     y: number;
   } | null>(null);
-  const { videoRef } = useGestureEngine({ enabled: gesturesEnabled });
   const pointer = usePointerInput({
     tableRef: screenRef,
     onAdd: addOnboardingCocktail,
     onRotate: navigateOnboarding,
+  });
+  const currentLayer = useMemo(
+    () =>
+      getOnboardingLayer({
+        phase,
+        onboardingNavigatePosition,
+        onboardingNavigatePreviousCompleted,
+        onboardingNavigateNextCompleted,
+        onboardingFlipFace,
+        navigateOnboarding,
+        flipOnboardingCocktail,
+      }),
+    [
+      flipOnboardingCocktail,
+      navigateOnboarding,
+      onboardingFlipFace,
+      onboardingNavigateNextCompleted,
+      onboardingNavigatePosition,
+      onboardingNavigatePreviousCompleted,
+      phase,
+    ],
+  );
+  const { isTransitioning, layers } =
+    useOnboardingLayerTransition(currentLayer);
+  const { videoRef } = useGestureEngine({
+    enabled: gesturesEnabled && !isTransitioning,
   });
 
   useEffect(() => {
@@ -153,6 +231,10 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
   }, [completeOnboardingReady, phase]);
 
   const handleForward = useCallback(() => {
+    if (isTransitioning) {
+      return;
+    }
+
     if (phase === "onboardingIntro") {
       activate("near");
       return;
@@ -161,9 +243,13 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
     if (phase === "onboardingNavigate") {
       navigateOnboarding("next", "near");
     }
-  }, [activate, navigateOnboarding, phase]);
+  }, [activate, isTransitioning, navigateOnboarding, phase]);
 
   const handleBack = useCallback(() => {
+    if (isTransitioning) {
+      return;
+    }
+
     if (phase === "onboardingIntro") {
       activate("near");
       return;
@@ -172,10 +258,14 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
     if (phase === "onboardingNavigate") {
       navigateOnboarding("previous", "near");
     }
-  }, [activate, navigateOnboarding, phase]);
+  }, [activate, isTransitioning, navigateOnboarding, phase]);
 
   const handlePointerDown = useCallback(
     (event: PointerEvent<HTMLElement>) => {
+      if (isTransitioning) {
+        return;
+      }
+
       pointer.onPointerDown(event);
 
       if (phase !== "onboardingRemove") {
@@ -191,11 +281,15 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
         ? { pointerId: event.pointerId, y: event.clientY }
         : null;
     },
-    [phase, pointer],
+    [isTransitioning, phase, pointer],
   );
 
   const handlePointerMove = useCallback(
     (event: PointerEvent<HTMLElement>) => {
+      if (isTransitioning) {
+        return;
+      }
+
       pointer.onPointerMove(event);
 
       const removeStart = removePointerStartRef.current;
@@ -213,7 +307,7 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
         removeOnboardingCocktail("near");
       }
     },
-    [phase, pointer, removeOnboardingCocktail],
+    [isTransitioning, phase, pointer, removeOnboardingCocktail],
   );
 
   const handlePointerEnd = useCallback(
@@ -254,7 +348,9 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
       ref={screenRef}
       className="onboarding-screen"
       aria-label="Gedulgt Onboarding"
+      aria-busy={isTransitioning ? "true" : "false"}
       data-gestures={gesturesEnabled ? "enabled" : "disabled"}
+      data-transitioning={isTransitioning ? "true" : "false"}
       onClickCapture={pointer.onClickCapture}
       onPointerCancel={handlePointerEnd}
       onPointerDown={handlePointerDown}
@@ -269,8 +365,27 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
       >
         <track kind="captions" />
       </video>
-      {phase === "onboardingNavigate" ||
-      phase === "onboardingNavigateConfirmation" ? (
+      {layers}
+    </section>
+  );
+}
+
+function getOnboardingLayer({
+  phase,
+  onboardingNavigatePosition,
+  onboardingNavigatePreviousCompleted,
+  onboardingNavigateNextCompleted,
+  onboardingFlipFace,
+  navigateOnboarding,
+  flipOnboardingCocktail,
+}: OnboardingLayerOptions): OnboardingLayer {
+  if (
+    phase === "onboardingNavigate" ||
+    phase === "onboardingNavigateConfirmation"
+  ) {
+    return {
+      key: "navigate",
+      node: (
         <OnboardingNavigateLayer
           position={onboardingNavigatePosition}
           confirmed={phase === "onboardingNavigateConfirmation"}
@@ -278,25 +393,154 @@ export function OnboardingScreen({ gesturesEnabled }: OnboardingScreenProps) {
           nextCompleted={onboardingNavigateNextCompleted}
           onRotate={navigateOnboarding}
         />
-      ) : phase === "onboardingAdd" || phase === "onboardingAddConfirmation" ? (
+      ),
+    };
+  }
+
+  if (phase === "onboardingAdd" || phase === "onboardingAddConfirmation") {
+    return {
+      key: "add",
+      node: (
         <OnboardingAddLayer confirmed={phase === "onboardingAddConfirmation"} />
-      ) : phase === "onboardingRemove" ||
-        phase === "onboardingRemoveConfirmation" ? (
+      ),
+    };
+  }
+
+  if (
+    phase === "onboardingRemove" ||
+    phase === "onboardingRemoveConfirmation"
+  ) {
+    return {
+      key: "remove",
+      node: (
         <OnboardingRemoveLayer
           confirmed={phase === "onboardingRemoveConfirmation"}
         />
-      ) : phase === "onboardingFlip" ||
-        phase === "onboardingFlipConfirmation" ? (
+      ),
+    };
+  }
+
+  if (phase === "onboardingFlip" || phase === "onboardingFlipConfirmation") {
+    return {
+      key: "flip",
+      node: (
         <OnboardingFlipLayer
           face={onboardingFlipFace}
           confirmed={phase === "onboardingFlipConfirmation"}
           onFlip={flipOnboardingCocktail}
         />
-      ) : phase === "onboardingReady" ? (
-        <OnboardingReadyLayer />
-      ) : (
-        <OnboardingIntro confirmed={phase === "onboardingIntroConfirmation"} />
-      )}
-    </section>
+      ),
+    };
+  }
+
+  if (phase === "onboardingReady") {
+    return {
+      key: "ready",
+      node: <OnboardingReadyLayer />,
+    };
+  }
+
+  return {
+    key: "intro",
+    node: (
+      <OnboardingIntro confirmed={phase === "onboardingIntroConfirmation"} />
+    ),
+  };
+}
+
+function useOnboardingLayerTransition(layer: OnboardingLayer) {
+  const [{ activeLayer, exitingLayer }, dispatch] = useReducer(
+    onboardingLayerTransitionReducer,
+    {
+      activeLayer: layer,
+      exitingLayer: null,
+    },
   );
+  const activeLayerRef = useRef(layer);
+
+  useLayoutEffect(() => {
+    if (layer.key === activeLayerRef.current.key) {
+      activeLayerRef.current = layer;
+      dispatch({ type: "refresh", layer });
+      return;
+    }
+
+    const previousLayer = activeLayerRef.current;
+    activeLayerRef.current = layer;
+    dispatch({ type: "start", layer, previousLayer });
+
+    const transitionDuration = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches
+      ? 0
+      : ONBOARDING_STEP_TRANSITION_MS;
+
+    const timer = window.setTimeout(() => {
+      dispatch({ type: "finish", exitingKey: previousLayer.key });
+    }, transitionDuration);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [layer]);
+
+  const isTransitioning =
+    exitingLayer !== null || layer.key !== activeLayer.key;
+
+  return {
+    isTransitioning,
+    layers: (
+      <>
+        {exitingLayer ? (
+          <div
+            key={exitingLayer.key}
+            className="onboarding-step-layer"
+            data-transition-state="exiting"
+            aria-hidden="true"
+          >
+            {exitingLayer.node}
+          </div>
+        ) : null}
+        <div
+          key={activeLayer.key}
+          className="onboarding-step-layer"
+          data-transition-state={exitingLayer ? "entering" : "present"}
+        >
+          {activeLayer.node}
+        </div>
+      </>
+    ),
+  };
+}
+
+function onboardingLayerTransitionReducer(
+  state: OnboardingLayerTransitionState,
+  action: OnboardingLayerTransitionAction,
+): OnboardingLayerTransitionState {
+  if (action.type === "refresh") {
+    if (state.activeLayer === action.layer) {
+      return state;
+    }
+
+    return {
+      ...state,
+      activeLayer: action.layer,
+    };
+  }
+
+  if (action.type === "start") {
+    return {
+      activeLayer: action.layer,
+      exitingLayer: action.previousLayer,
+    };
+  }
+
+  if (state.exitingLayer?.key !== action.exitingKey) {
+    return state;
+  }
+
+  return {
+    ...state,
+    exitingLayer: null,
+  };
 }
