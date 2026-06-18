@@ -10,6 +10,7 @@ import {
 
 const config: EngineConfig = {
   swipeMinPx: 100,
+  repeatSwipeMinPx: 300,
   swipeMaxOffAxisPx: 50,
   swipeMinVelocityPxMs: 0.25,
   swipeUpMinPx: 90,
@@ -32,6 +33,7 @@ const initialState = {
   swipeOrigin: null,
   cooldownUntil: 0,
   lastSwipeDirection: null,
+  lastSwipePoint: null,
   returnGuardUntil: 0,
   doubleOpenSince: 0,
   doubleOpenAnchor: [null, null],
@@ -86,6 +88,7 @@ describe("defaultConfig", () => {
   it("returns correct proportional values for given screen dimensions", () => {
     expect(defaultConfig(1000, 800)).toEqual({
       swipeMinPx: 130,
+      repeatSwipeMinPx: 380,
       swipeMaxOffAxisPx: 144,
       swipeMinVelocityPxMs: 0.25,
       swipeUpMinPx: 112.00000000000001,
@@ -114,6 +117,7 @@ describe("updateEngine - no hand", () => {
         swipeOrigin: { x: 100, y: 100 },
         cooldownUntil: 900,
         lastSwipeDirection: "right",
+        lastSwipePoint: { x: 230, y: 100 },
         returnGuardUntil: 1_500,
         doubleOpenSince: 100,
         doubleOpenAnchor: [
@@ -393,6 +397,40 @@ describe("updateEngine - SWIPE left/right", () => {
     } satisfies EngineState;
 
     const result = step(state, frame("open", { x: 230, y: 100 }, 500));
+
+    expect(result.event).toEqual({ type: "SWIPE", direction: "right" });
+  });
+
+  it("does not fire same direction again before repeatSwipeMinPx is reached", () => {
+    const state = {
+      ...createEngineState(),
+      phase: "tracking",
+      pose: "open",
+      poseStart: 900,
+      swipeOrigin: { x: 230, y: 100 },
+      lastSwipeDirection: "right",
+      lastSwipePoint: { x: 230, y: 100 },
+      returnGuardUntil: 1_500,
+    } satisfies EngineState;
+
+    const result = step(state, frame("open", { x: 360, y: 100 }, 1_100));
+
+    expect(result.event).toBeNull();
+  });
+
+  it("fires same direction again once repeatSwipeMinPx is reached", () => {
+    const state = {
+      ...createEngineState(),
+      phase: "tracking",
+      pose: "open",
+      poseStart: 900,
+      swipeOrigin: { x: 230, y: 100 },
+      lastSwipeDirection: "right",
+      lastSwipePoint: { x: 230, y: 100 },
+      returnGuardUntil: 1_500,
+    } satisfies EngineState;
+
+    const result = step(state, frame("open", { x: 540, y: 100 }, 1_900));
 
     expect(result.event).toEqual({ type: "SWIPE", direction: "right" });
   });
@@ -698,6 +736,16 @@ describe("updateEngine - state threading", () => {
     result = step(result.state, frame("open", { x: 230, y: 100 }, 300));
 
     expect(result.state.lastSwipeDirection).toBe("right");
+  });
+
+  it("lastSwipePoint is set correctly after SWIPE fires", () => {
+    let result = step(
+      createEngineState(),
+      frame("open", { x: 100, y: 100 }, 100),
+    );
+    result = step(result.state, frame("open", { x: 230, y: 100 }, 300));
+
+    expect(result.state.lastSwipePoint).toEqual({ x: 230, y: 100 });
   });
 
   it("returnGuardUntil is set correctly after SWIPE fires", () => {

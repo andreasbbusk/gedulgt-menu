@@ -20,6 +20,7 @@ export type EngineInput = {
 
 export type EngineConfig = {
   swipeMinPx: number;
+  repeatSwipeMinPx: number;
   swipeMaxOffAxisPx: number;
   swipeMinVelocityPxMs: number;
   swipeUpMinPx: number;
@@ -42,6 +43,7 @@ export type EngineState = {
   swipeOrigin: Pt | null;
   cooldownUntil: number;
   lastSwipeDirection: "left" | "right" | null;
+  lastSwipePoint: Pt | null;
   returnGuardUntil: number;
   doubleOpenSince: number;
   doubleOpenAnchor: [Pt | null, Pt | null];
@@ -52,6 +54,7 @@ export type EngineState = {
 export function defaultConfig(screenW: number, screenH: number): EngineConfig {
   return {
     swipeMinPx: screenW * 0.13,
+    repeatSwipeMinPx: screenW * 0.38,
     swipeMaxOffAxisPx: screenH * 0.18,
     swipeMinVelocityPxMs: 0.25,
     swipeUpMinPx: screenH * 0.14,
@@ -76,6 +79,7 @@ export function createEngineState(): EngineState {
     swipeOrigin: null,
     cooldownUntil: 0,
     lastSwipeDirection: null,
+    lastSwipePoint: null,
     returnGuardUntil: 0,
     doubleOpenSince: 0,
     doubleOpenAnchor: [null, null],
@@ -203,6 +207,8 @@ export function updateEngine(
         event.type === "SWIPE"
           ? event.direction
           : clearedState.lastSwipeDirection,
+      lastSwipePoint:
+        event.type === "SWIPE" ? input.point : eventState.lastSwipePoint,
       returnGuardUntil:
         event.type === "SWIPE"
           ? input.time + config.returnGuardMs
@@ -273,12 +279,18 @@ export function updateEngine(
       clearedState.lastSwipeDirection !== null &&
       direction !== clearedState.lastSwipeDirection &&
       input.time < clearedState.returnGuardUntil;
+    const lastSwipePoint = clearedState.lastSwipePoint;
+    const hasRepeatDistance =
+      clearedState.lastSwipeDirection !== direction ||
+      !lastSwipePoint ||
+      Math.abs(input.point.x - lastSwipePoint.x) >= config.repeatSwipeMinPx;
 
     if (
       Math.abs(dx) >= config.swipeMinPx &&
       Math.abs(dy) <= config.swipeMaxOffAxisPx &&
       velocityPxMs >= config.swipeMinVelocityPxMs &&
-      !isReturnStroke
+      !isReturnStroke &&
+      hasRepeatDistance
     ) {
       return fire({ type: "SWIPE", direction });
     }

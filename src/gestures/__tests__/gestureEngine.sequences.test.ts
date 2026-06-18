@@ -10,6 +10,7 @@ import {
 
 const config: EngineConfig = {
   swipeMinPx: 100,
+  repeatSwipeMinPx: 300,
   swipeMaxOffAxisPx: 50,
   swipeMinVelocityPxMs: 0.25,
   swipeUpMinPx: 90,
@@ -137,7 +138,7 @@ describe("gestureEngine sequences", () => {
     expect(result.events).toEqual([null, null, null, { type: "DOUBLE_OPEN" }]);
   });
 
-  it("rapid consecutive swipes in same direction all fire", () => {
+  it("requires extra same-direction travel before a second sideways swipe fires", () => {
     let result = step(
       createEngineState(),
       frame("open", { x: 100, y: 100 }, 100),
@@ -148,11 +149,11 @@ describe("gestureEngine sequences", () => {
     result = step(result.state, frame("open", { x: 230, y: 100 }, 900));
     result = step(result.state, frame("open", { x: 230, y: 100 }, 901));
     result = step(result.state, frame("open", { x: 360, y: 100 }, 1_100));
-    expect(result.event).toEqual({ type: "SWIPE", direction: "right" });
+    expect(result.event).toBeNull();
 
     result = step(result.state, frame("open", { x: 360, y: 100 }, 1_700));
     result = step(result.state, frame("open", { x: 360, y: 100 }, 1_701));
-    result = step(result.state, frame("open", { x: 490, y: 100 }, 1_900));
+    result = step(result.state, frame("open", { x: 540, y: 100 }, 1_900));
     expect(result.event).toEqual({ type: "SWIPE", direction: "right" });
   });
 });
