@@ -25,8 +25,9 @@ import { OnboardingReadyLayer } from "./OnboardingReadyLayer";
 import { OnboardingRemoveLayer } from "./OnboardingRemoveLayer";
 import { OnboardingIntro } from "./table/OnboardingIntro";
 import { usePointerInput } from "./table/usePointerInput";
+import { POINTER_INWARD_SWIPE } from "./table/utils";
 
-const ONBOARDING_REMOVE_SWIPE_DISTANCE = 94;
+const ONBOARDING_REMOVE_SWIPE_DISTANCE = POINTER_INWARD_SWIPE;
 const ONBOARDING_STEP_TRANSITION_MS = 620;
 
 type OnboardingLayerKey =

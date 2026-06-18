@@ -6,8 +6,8 @@ import type {
 
 export const POINTER_CLICK_SUPPRESS_DISTANCE = 14;
 export const POINTER_CLICK_SUPPRESS_MS = 360;
-export const POINTER_HORIZONTAL_SWIPE = 86;
-export const POINTER_INWARD_SWIPE = 94;
+export const POINTER_HORIZONTAL_SWIPE = 68;
+export const POINTER_INWARD_SWIPE = 76;
 export const FEEDBACK_SETTLE_MS = 950;
 
 export function cx(...classes: Array<string | false | null | undefined>) {
