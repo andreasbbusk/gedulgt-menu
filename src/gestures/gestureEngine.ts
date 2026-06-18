@@ -54,7 +54,7 @@ export type EngineState = {
 export function defaultConfig(screenW: number, screenH: number): EngineConfig {
   return {
     swipeMinPx: screenW * 0.13,
-    repeatSwipeMinPx: screenW * 0.28,
+    repeatSwipeMinPx: screenW * 0.13,
     swipeMaxOffAxisPx: screenH * 0.18,
     swipeMinVelocityPxMs: 0.25,
     swipeUpMinPx: screenH * 0.14,
